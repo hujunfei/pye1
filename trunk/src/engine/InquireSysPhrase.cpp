@@ -43,7 +43,7 @@ SysRootIndexPoint::~SysRootIndexPoint()
 /**
  * 类构造函数.
  */
-InquireSysPhrase::InquireSysPhrase():fuzzy(NULL)
+InquireSysPhrase::InquireSysPhrase():fztable(NULL)
 {
 }
 
@@ -74,9 +74,9 @@ void InquireSysPhrase::CreateIndexTree(const char *mfile)
  * 设置模糊拼音单元对照表.
  * @param fy 对照表
  */
-void InquireSysPhrase::SetFuzzyPinyinUnits(const int8_t *fy)
+void InquireSysPhrase::SetFuzzyPinyinUnits(const int8_t *fz)
 {
-	fuzzy = fy;
+	fztable = fz;
 }
 
 /**
@@ -85,7 +85,7 @@ void InquireSysPhrase::SetFuzzyPinyinUnits(const int8_t *fy)
  * @param len 汉字索引数组有效长度
  * @return 词语数据索引链表
  */
-GSList *InquireSysPhrase::SearchMatchPhrase(CharsIndex *chidx, int len)
+GSList *InquireSysPhrase::SearchMatchPhrase(const CharsIndex *chidx, int len)
 {
 	GSList head = {NULL, NULL};
 	GSList *list1, *list2, *tlist;
@@ -94,7 +94,8 @@ GSList *InquireSysPhrase::SearchMatchPhrase(CharsIndex *chidx, int len)
 
 	/* 对实际索引和模糊索引下的数据分别进行查询 */
 	list1 = SearchIndexMatchPhrase(chidx->major, chidx, len);
-	list2 = SearchIndexMatchPhrase(fuzzy ? *(fuzzy + chidx->major) : -1, chidx, len);
+	list2 = SearchIndexMatchPhrase(fztable ? *(fztable + chidx->major) : -1,
+								 chidx, len);
 
 	/* 合并数据 */
 	balance = 0;
@@ -135,13 +136,16 @@ GSList *InquireSysPhrase::SearchMatchPhrase(CharsIndex *chidx, int len)
  * @param len 汉字索引数组有效长度
  * @return 词语数据索引
  */
-PhraseIndex *InquireSysPhrase::SearchPreferPhrase(CharsIndex *chidx, int len)
+PhraseIndex *InquireSysPhrase::SearchPreferPhrase(const CharsIndex *chidx, int len)
 {
 	PhraseIndex *phridx;
 
 	if ( (phridx = SearchIndexPreferPhrase(chidx->major, chidx, len)))
 		return phridx;
-	return SearchIndexPreferPhrase(fuzzy ? *(fuzzy + chidx->major) : -1, chidx, len);
+	phridx = SearchIndexPreferPhrase(fztable ? *(fztable + chidx->major) : -1,
+									 chidx, len);
+
+	return phridx;
 }
 
 /**
@@ -149,7 +153,7 @@ PhraseIndex *InquireSysPhrase::SearchPreferPhrase(CharsIndex *chidx, int len)
  * @param phridx 词语数据索引
  * @return 词语数据
  */
-PhraseData *InquireSysPhrase::AnalysisPhraseIndex(PhraseIndex *phridx)
+PhraseData *InquireSysPhrase::AnalysisPhraseIndex(const PhraseIndex *phridx)
 {
 	PhraseData *phrdt;
 
@@ -223,7 +227,8 @@ void InquireSysPhrase::ReadPhraseIndexTree()
  * @param len 汉字索引数组有效长度
  * @return 词语数据索引链表
  */
-GSList *InquireSysPhrase::SearchIndexMatchPhrase(int8_t index, CharsIndex *chidx, int len)
+GSList *InquireSysPhrase::SearchIndexMatchPhrase(int8_t index,
+				 const CharsIndex *chidx, int len)
 {
 	SysCharsLengthPoint *lengthp;
 	SysCharsIndexPoint *indexp;
@@ -272,7 +277,7 @@ GSList *InquireSysPhrase::SearchIndexMatchPhrase(int8_t index, CharsIndex *chidx
  * @return 词语数据索引
  */
 PhraseIndex *InquireSysPhrase::SearchIndexPreferPhrase(int8_t index,
-					 CharsIndex *chidx, int len)
+					 const CharsIndex *chidx, int len)
 {
 	SysCharsLengthPoint *lengthp, *preflenp;
 	SysCharsIndexPoint *indexp;
@@ -325,7 +330,8 @@ PhraseIndex *InquireSysPhrase::SearchIndexPreferPhrase(int8_t index,
  * @param len 需要检查的长度
  * @return 是否匹配
  */
-bool InquireSysPhrase::MatchCharsIndex(CharsIndex *sidx, CharsIndex *didx, int len)
+bool InquireSysPhrase::MatchCharsIndex(const CharsIndex *sidx,
+				 const CharsIndex *didx, int len)
 {
 	int8_t index1, index2;
 	int count;
@@ -334,12 +340,12 @@ bool InquireSysPhrase::MatchCharsIndex(CharsIndex *sidx, CharsIndex *didx, int l
 	while (count < len) {
 		index1 = (sidx + count)->major;
 		index2 = (didx + count)->major;
-		if (index1 != index2 && (!fuzzy || *(fuzzy + index1) != index2))
+		if (index1 != index2 && (!fztable || *(fztable + index1) != index2))
 			break;
 		index1 = (sidx + count)->minor;
 		index2 = (didx + count)->minor;
 		if (index2 != -1 && index1 != index2
-			 && (!fuzzy || *(fuzzy + index1) != index2))
+			 && (!fztable || *(fztable + index1) != index2))
 			break;
 		count++;
 	}

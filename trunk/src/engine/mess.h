@@ -29,7 +29,7 @@ typedef struct {
  * 词语数据索引结构.
  */
 typedef struct {
-	CharsIndex *chidx;	///< 汉字索引数组 *
+	const CharsIndex *chidx;///< 汉字索引数组 *
 	int chlen;		///< 汉字索引数组有效长度
 	off_t offset;		///< 词语索引偏移量
 	uint freq;		///< 词语使用频率
@@ -39,7 +39,7 @@ typedef struct {
  * 词语数据结构.
  */
 typedef struct {
-	CharsIndex *chidx;	///< 汉字索引数组 *
+	const CharsIndex *chidx;	///< 汉字索引数组 *
 	int chlen;		///< 汉字索引数组有效长度
 	off_t offset;		///< 词语索引偏移量,系统词汇(-1)
 	gunichar2 *data;	///< 词语数据 *
@@ -56,9 +56,9 @@ public:
 
 	virtual void CreateIndexTree(const char *mfile) = 0;
 	virtual void SetFuzzyPinyinUnits(const int8_t *fy) = 0;
-	virtual GSList *SearchMatchPhrase(CharsIndex *chidx, int len) = 0;
-	virtual PhraseIndex *SearchPreferPhrase(CharsIndex *chidx, int len) = 0;
-	virtual PhraseData *AnalysisPhraseIndex(PhraseIndex *phridx) = 0;
+	virtual GSList *SearchMatchPhrase(const CharsIndex *chidx, int len) = 0;
+	virtual PhraseIndex *SearchPreferPhrase(const CharsIndex *chidx, int len) = 0;
+	virtual PhraseData *AnalysisPhraseIndex(const PhraseIndex *phridx) = 0;
 };
 
 #endif

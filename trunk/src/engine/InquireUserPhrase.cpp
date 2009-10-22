@@ -47,7 +47,7 @@ UserRootIndexPoint::~UserRootIndexPoint()
 /**
  * 类构造函数.
  */
-InquireUserPhrase::InquireUserPhrase():fuzzy(NULL)
+InquireUserPhrase::InquireUserPhrase():fztable(NULL)
 {
 }
 
@@ -82,9 +82,9 @@ void InquireUserPhrase::CreateIndexTree(const char *mfile)
  * 设置模糊拼音单元对照表.
  * @param fy 对照表
  */
-void InquireUserPhrase::SetFuzzyPinyinUnits(const int8_t *fy)
+void InquireUserPhrase::SetFuzzyPinyinUnits(const int8_t *fz)
 {
-	fuzzy = fy;
+	fztable = fz;
 }
 
 /**
@@ -93,7 +93,7 @@ void InquireUserPhrase::SetFuzzyPinyinUnits(const int8_t *fy)
  * @param len 汉字索引数组有效长度
  * @return 词语数据索引链表
  */
-GSList *InquireUserPhrase::SearchMatchPhrase(CharsIndex *chidx, int len)
+GSList *InquireUserPhrase::SearchMatchPhrase(const CharsIndex *chidx, int len)
 {
 	GSList head = {NULL, NULL};
 	GSList *list1, *list2, *tlist;
@@ -101,7 +101,8 @@ GSList *InquireUserPhrase::SearchMatchPhrase(CharsIndex *chidx, int len)
 
 	/* 对实际索引和模糊索引下的数据分别进行查询 */
 	list1 = SearchIndexMatchPhrase(chidx->major, chidx, len);
-	list2 = SearchIndexMatchPhrase(fuzzy ? *(fuzzy + chidx->major) : -1, chidx, len);
+	list2 = SearchIndexMatchPhrase(fztable ? *(fztable + chidx->major) : -1,
+								 chidx, len);
 
 	/* 合并数据 */
 	tlist = &head;
@@ -138,13 +139,16 @@ GSList *InquireUserPhrase::SearchMatchPhrase(CharsIndex *chidx, int len)
  * @param len 汉字索引数组有效长度
  * @return 词语数据索引
  */
-PhraseIndex *InquireUserPhrase::SearchPreferPhrase(CharsIndex *chidx, int len)
+PhraseIndex *InquireUserPhrase::SearchPreferPhrase(const CharsIndex *chidx, int len)
 {
 	PhraseIndex *phridx;
 
 	if ( (phridx = SearchIndexPreferPhrase(chidx->major, chidx, len)))
 		return phridx;
-	return SearchIndexPreferPhrase(fuzzy ? *(fuzzy + chidx->major) : -1, chidx, len);
+	phridx = SearchIndexPreferPhrase(fztable ? *(fztable + chidx->major) : -1,
+									 chidx, len);
+
+	return phridx;
 }
 
 /**
@@ -152,7 +156,7 @@ PhraseIndex *InquireUserPhrase::SearchPreferPhrase(CharsIndex *chidx, int len)
  * @param phridx 词语数据索引
  * @return 词语数据
  */
-PhraseData *InquireUserPhrase::AnalysisPhraseIndex(PhraseIndex *phridx)
+PhraseData *InquireUserPhrase::AnalysisPhraseIndex(const PhraseIndex *phridx)
 {
 	PhraseData *phrdt;
 
@@ -170,10 +174,10 @@ PhraseData *InquireUserPhrase::AnalysisPhraseIndex(PhraseIndex *phridx)
 }
 
 /**
- * 添加一个新的词语到词语索引树.
+ * 插入一个新的词语到词语索引树.
  * @param phrdt 词语数据
  */
-void InquireUserPhrase::AttachPhraseToTree(PhraseData *phrdt)
+void InquireUserPhrase::InsertPhraseToTree(const PhraseData *phrdt)
 {
 	UserCharsIndexPoint *indexp;
 	UserCharsLengthPoint *lengthp;
@@ -241,7 +245,7 @@ void InquireUserPhrase::AttachPhraseToTree(PhraseData *phrdt)
  * 从词语索引树中删除一个词语.
  * @param phrdt 词语数据
  */
-void InquireUserPhrase::DeletePhraseFromTree(PhraseData *phrdt)
+void InquireUserPhrase::DeletePhraseFromTree(const PhraseData *phrdt)
 {
 	UserCharsIndexPoint *indexp;
 	UserCharsLengthPoint *lengthp;
@@ -283,7 +287,7 @@ void InquireUserPhrase::DeletePhraseFromTree(PhraseData *phrdt)
  * 增加指定词语的使用频率.
  * @param phrdt 词语数据
  */
-void InquireUserPhrase::IncreasePhraseFreq(PhraseData *phrdt)
+void InquireUserPhrase::IncreasePhraseFreq(const PhraseData *phrdt)
 {
 	UserCharsIndexPoint *indexp;
 	UserCharsLengthPoint *lengthp;
@@ -450,7 +454,8 @@ void InquireUserPhrase::ReadPhraseIndexTree()
  * @param len 汉字索引数组有效长度
  * @return 词语数据索引链表
  */
-GSList *InquireUserPhrase::SearchIndexMatchPhrase(int8_t index, CharsIndex *chidx, int len)
+GSList *InquireUserPhrase::SearchIndexMatchPhrase(int8_t index,
+				 const CharsIndex *chidx, int len)
 {
 	UserCharsLengthPoint *lengthp;
 	UserCharsIndexPoint *indexp;
@@ -498,7 +503,7 @@ GSList *InquireUserPhrase::SearchIndexMatchPhrase(int8_t index, CharsIndex *chid
  * @return 词语数据索引
  */
 PhraseIndex *InquireUserPhrase::SearchIndexPreferPhrase(int8_t index,
-					 CharsIndex *chidx, int len)
+					 const CharsIndex *chidx, int len)
 {
 	UserCharsLengthPoint *lengthp, *preflenp;
 	UserCharsIndexPoint *indexp;
@@ -550,7 +555,8 @@ PhraseIndex *InquireUserPhrase::SearchIndexPreferPhrase(int8_t index,
  * @param len 需要检查的长度
  * @return 是否匹配
  */
-bool InquireUserPhrase::MatchCharsIndex(CharsIndex *sidx, CharsIndex *didx, int len)
+bool InquireUserPhrase::MatchCharsIndex(const CharsIndex *sidx, const CharsIndex *didx,
+										 int len)
 {
 	int8_t index1, index2;
 	int count;
@@ -559,12 +565,12 @@ bool InquireUserPhrase::MatchCharsIndex(CharsIndex *sidx, CharsIndex *didx, int 
 	while (count < len) {
 		index1 = (sidx + count)->major;
 		index2 = (didx + count)->major;
-		if (index1 != index2 && (!fuzzy || *(fuzzy + index1) != index2))
+		if (index1 != index2 && (!fztable || *(fztable + index1) != index2))
 			break;
 		index1 = (sidx + count)->minor;
 		index2 = (didx + count)->minor;
 		if (index2 != -1 && index1 != index2
-			 && (!fuzzy || *(fuzzy + index1) != index2))
+			 && (!fztable || *(fztable + index1) != index2))
 			break;
 		count++;
 	}

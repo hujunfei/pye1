@@ -42,7 +42,7 @@ public:
 	~ParseString();
 
 	bool ParsePinyinString(const char *string, CharsIndex **chidx, int *len);
-	char *RestorePinyinString(CharsIndex *chidx, int len);
+	char *RestorePinyinString(const CharsIndex *chidx, int len);
 	int8_t GetStringIndex(const char *string);
 	int8_t GetPinyinUnitSum();
 private:

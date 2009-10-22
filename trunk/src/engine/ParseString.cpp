@@ -129,7 +129,7 @@ bool ParseString::ParsePinyinString(const char *string, CharsIndex **chidx, int 
  * @param len 汉字索引数组有效长度
  * @return 拼音串
  */
-char *ParseString::RestorePinyinString(CharsIndex *chidx, int len)
+char *ParseString::RestorePinyinString(const CharsIndex *chidx, int len)
 {
 	char *pinyin, *ptr;
 	int size, count;

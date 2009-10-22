@@ -61,17 +61,18 @@ public:
 	virtual ~InquireSysPhrase();
 
 	virtual void CreateIndexTree(const char *mfile);
-	virtual void SetFuzzyPinyinUnits(const int8_t *fy);
-	virtual GSList *SearchMatchPhrase(CharsIndex *chidx, int len);
-	virtual PhraseIndex *SearchPreferPhrase(CharsIndex *chidx, int len);
-	virtual PhraseData *AnalysisPhraseIndex(PhraseIndex *phridx);
+	virtual void SetFuzzyPinyinUnits(const int8_t *fz);
+	virtual GSList *SearchMatchPhrase(const CharsIndex *chidx, int len);
+	virtual PhraseIndex *SearchPreferPhrase(const CharsIndex *chidx, int len);
+	virtual PhraseData *AnalysisPhraseIndex(const PhraseIndex *phridx);
 private:
 	void ReadPhraseIndexTree();
-	GSList *SearchIndexMatchPhrase(int8_t index, CharsIndex *chidx, int len);
-	PhraseIndex *SearchIndexPreferPhrase(int8_t index, CharsIndex *chidx, int len);
-	bool MatchCharsIndex(CharsIndex *sidx, CharsIndex *didx, int len);
+	GSList *SearchIndexMatchPhrase(int8_t index, const CharsIndex *chidx, int len);
+	PhraseIndex *SearchIndexPreferPhrase(int8_t index, const CharsIndex *chidx,
+									 int len);
+	bool MatchCharsIndex(const CharsIndex *sidx, const CharsIndex *didx, int len);
 
-	const int8_t *fuzzy;		///< 模模糊拼音单元对照表
+	const int8_t *fztable;		///< 模模糊拼音单元对照表
 	SysRootIndexPoint root;	///< 词语树的根索引点
 };
 
