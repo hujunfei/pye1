@@ -121,8 +121,8 @@ void PinyinEngine::InitSysEngineUnits(const char *sys)
 					 eu->priority; tlist = g_slist_next(tlist));
 		eulist = g_slist_insert_before(eulist, tlist, eu);
 	}
-	free(lineptr);
 	g_free(dirname);
+	free(lineptr);
 
 	/* 关闭文件 */
 	fclose(stream);
@@ -137,12 +137,14 @@ void PinyinEngine::InitUserEngineUnit(const char *user)
 	EngineUnit *eu;
 	char *dirname;
 
+	/* 创建运行环境 */
 	userpath = g_strdup(user);
 	dirname = g_path_get_dirname(user);
 	bakpath = g_strdup_printf("%s/%s", dirname, "bak.mb");
 	g_free(dirname);
 	pye_copy_file(bakpath, userpath);
 
+	/* 创建引擎 */
 	eu = CreateEngineUnit(bakpath, G_MAXINT, USER_TYPE);
 	eulist = g_slist_prepend(eulist, eu);
 }
@@ -199,7 +201,7 @@ void PinyinEngine::BakUserPhrase()
 }
 
 /**
- * 移动光标点.
+ * 移动当前光标点.
  * @param offset 偏移量
  * @return 引擎执行状况
  */
@@ -269,7 +271,7 @@ bool PinyinEngine::DeletePinyinKey()
 bool PinyinEngine::BackspacePinyinKey()
 {
 	/* 移除字符 */
-	if (cursor == 0)
+	if (cursor == 0 || pytable->len == 0)
 		return false;
 	cursor--;
 	pytable = g_array_remove_index(pytable, cursor);
@@ -286,9 +288,33 @@ bool PinyinEngine::BackspacePinyinKey()
 }
 
 /**
+ * 取消最后一个被选中的词语.
+ * @return 引擎执行状况
+ */
+bool PinyinEngine::RevokeSelectedPhrase()
+{
+	GSList *tlist;
+	PhraseData *phrdt;
+
+	/* 移除最后被选中的词语 */
+	if (!aclist)
+		return false;
+	tlist = g_slist_last(aclist);
+	phrdt = (PhraseData *)tlist->data;
+	g_free(phrdt->data);
+	delete phrdt;
+	aclist = g_slist_delete_link(aclist, tlist);
+	/* 清空必要缓冲数据 */
+	ClearEngineUnitBuffer();
+	ClearPinyinEngineTempBuffer();
+	/* 查询词语 */
+	InquirePhraseIndex();
+}
+
+/**
  * 获取提交数据.
- * @param text 词语数据
- * @param len 词语数据有效长度
+ * @retval text 词语数据
+ * @retval len 词语数据有效长度
  * @return 引擎执行状况
  */
 bool PinyinEngine::GetCommitText(gunichar2 **text, glong *len)
@@ -321,29 +347,168 @@ bool PinyinEngine::GetCommitText(gunichar2 **text, glong *len)
 
 /**
  * 获取预编辑数据.
- * @param text 词语数据
- * @param len 词语数据有效长度
+ * @retval text 词语数据
+ * @retval len 词语数据有效长度
  * @return 引擎执行状况
  */
 bool PinyinEngine::GetPreeditText(gunichar2 **text, glong *len)
 {
+	GSList *tlist;
+	PhraseData *phrdt;
+	gunichar2 *ptr;
+	glong length;
 
+	/* 获取数据总长度 */
+	length = 0;
+	tlist = aclist;
+	while (tlist) {
+		length += ((PhraseData *)tlist->data)->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+	if (cclist)
+		length += ((PhraseData *)cclist->data)->dtlen + 1;
+
+	/* 拷贝数据 */
+	*text = (gunichar2 *)g_malloc(sizeof(gunichar2) * length);
+	*len = 0;
+	tlist = aclist;
+	while (tlist) {
+		phrdt = (PhraseData *)tlist->data;
+		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
+		*len = phrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+	if (cclist) {
+		ptr = g_utf8_to_utf16("\x20", 1, NULL, NULL, NULL);
+		memcpy(*text + *len, ptr, sizeof(gunichar2));
+		(*len)++;
+		g_free(ptr);
+		phrdt = (PhraseData *)tlist->data;
+		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
+		*len = phrdt->dtlen;
+	}
+
+	return true;
 }
 
+/**
+ * 获取辅助数据.
+ * @retval text 词语数据
+ * @retval len 词语数据有效长度
+ * @return 引擎执行状况
+ */
 bool PinyinEngine::GetAuxiliaryText(gunichar2 **text, glong *len)
 {
+	ParseString parse;
+	GSList *tlist;
+	PhraseData *phrdt;
+	int offset;
+	glong length;
+	size_t size;
+	char *pinyin;
+	gunichar2 *ptr;
+
+	/* 获取数据总长度 */
+	length = 0;
+	offset = 0;
+	tlist = aclist;
+	while (tlist) {
+		phrdt = (PhraseData *)tlist->data;
+		offset += phrdt->chlen;
+		length += phrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+	if (offset != chlen) {
+		pinyin = parse.RestorePinyinString(chidx + offset, chlen - offset);
+		size = strlen(pinyin);
+		length += size + 1;
+	}
+
+	/* 拷贝数据 */
+	*text = (gunichar2 *)g_malloc(sizeof(gunichar2) * length);
+	*len = 0;
+	tlist = aclist;
+	while (tlist) {
+		phrdt = (PhraseData *)tlist->data;
+		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
+		*len = phrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+	if (offset != chlen) {
+		ptr = g_utf8_to_utf16("\x20", 1, NULL, NULL, NULL);
+		memcpy(*text + *len, ptr, sizeof(gunichar2));
+		(*len)++;
+		g_free(ptr);
+		ptr = g_utf8_to_utf16(pinyin, size, NULL, NULL, NULL);
+		memcpy(*text + *len, ptr, sizeof(gunichar2) * size);
+		*len += size;
+		g_free(ptr);
+		g_free(pinyin);	//幸好还没忘记
+	}
+
+	return true;
 }
 
+/**
+ * 获取一个页面的词语数据.
+ * @retval list 词语链表
+ * @retval len 词语链表长度
+ * @return 引擎执行状况
+ */
 bool PinyinEngine::GetPagePhrase(GSList **list, guint *len)
 {
+	EngineUnit *eu;
+	PhraseIndex *phridx;
+	PhraseData *phrdt;
+	uint8_t count;
+
+	/* 初始化参数 */
+	*list = NULL;
+	*len = 0;
+
+	/* 提取一页的词语数据 */
+	count = 0;
+	while (count < pagesize) {
+		if (!(eu = SearchPreferPhrase()))
+			break;
+		phridx = (PhraseIndex *)eu->phrlist->data;
+		eu->phrlist = g_slist_delete_link(eu->phrlist, eu->phrlist);
+		phrdt = eu->inqphr->AnalysisPhraseIndex(phridx);
+		g_free(phridx);
+		*list = g_slist_append(*list, phrdt);
+		cclist = g_slist_prepend(cclist, phrdt);
+		(*len)++;
+		count++;
+	}
+
+	return (count != 0);
 }
 
+/**
+ * 选定缓冲区中的词语.
+ * @param phrdt 词语数据
+ * @return 引擎执行状况
+ */
 bool PinyinEngine::SelectCachePhrase(const char *phrdt)
 {
+	GSList *tlist;
+
+	aclist = g_slist_append(aclist, (gpointer)phrdt);
+	if ( (tlist = g_slist_find(cclist, phrdt)))
+		tlist->data = NULL;
+	ClearEngineUnitBuffer();
+	ClearPinyinEngineTempBuffer();
+
+	return true;
 }
 
+/**
+ * 词语查询工作已经已经完成.
+ * @return 是否完成
+ */
 bool PinyinEngine::IsFinishInquirePhrase()
 {
+	return (ComputeInquireOffset() == chlen);
 }
 
 /**
@@ -354,7 +519,8 @@ bool PinyinEngine::FinishInquirePhrase()
 {
 	ClearEngineUnitBuffer();
 	ClearPinyinEngineBuffer();
-	cursor = 0;
+
+	return true;
 }
 
 /**
@@ -377,7 +543,7 @@ bool PinyinEngine::BreakMbfileString(char *lineptr, const char **file,
 		return false;
 	*ptr = '\0';
 	ptr++;
-	if (*(ptr += strspn(ptr, "\x20\t\r\n")) == '\0' || *ptr == '#')
+	if (!isdigit(*ptr))
 		return false;
 	*priority = ptr;
 
@@ -414,7 +580,6 @@ void PinyinEngine::CreateCharsIndex()
 	char *pinyin;
 
 	pinyin = CorrectPinyinString();
-	g_free(chidx);	//鉴于索引数组中的数据可能没被释放
 	parse.ParsePinyinString(pinyin, &chidx, &chlen);
 	g_free(pinyin);	//已经没有用处了
 }
@@ -496,6 +661,38 @@ int PinyinEngine::ComputeInquireOffset()
 }
 
 /**
+ * 搜索各个引擎单元所提供的最佳词语.
+ * @return 引擎单元
+ */
+EngineUnit *PinyinEngine::SearchPreferPhrase()
+{
+	GSList *tlist;
+	EngineUnit *eu, *eunit;
+	PhraseIndex *phridx;
+	int chlen;
+
+	/* 初始化数据 */
+	eunit = NULL;
+	chlen = 0;
+
+	/* 查找 */
+	tlist = eulist;
+	while (tlist) {
+		eu = (EngineUnit *)tlist->data;
+		if (eu->phrlist) {
+			phridx = (PhraseIndex *)eu->phrlist->data;
+			if (phridx->chlen > chlen) {
+				eunit = eu;
+				chlen = phridx->chlen;
+			}
+		}
+		tlist = g_slist_next(tlist);
+	}
+
+	return eunit;
+}
+
+/**
  * 清空引擎单元中的缓冲数据.
  */
 void PinyinEngine::ClearEngineUnitBuffer()
@@ -524,6 +721,7 @@ void PinyinEngine::ClearPinyinEngineBuffer()
 {
 	/* 清空待查询拼音表数据 */
 	pytable = g_array_remove_range(pytable, 0, pytable->len);
+	cursor = 0;
 	/* 释放汉字索引数组 */
 	g_free(chidx);
 	chidx = NULL;

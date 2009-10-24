@@ -151,6 +151,8 @@ char *ParseString::RestorePinyinString(const CharsIndex *chidx, int len)
 		ptr = pinyin + size;
 		count++;
 	}
+	if (count != 0)
+		ptr--;
 	*ptr = '\0';
 
 	return pinyin;

@@ -58,6 +58,7 @@ public:
 	bool InsertPinyinKey(const char ch);
 	bool DeletePinyinKey();
 	bool BackspacePinyinKey();
+	bool RevokeSelectedPhrase();
 	bool GetCommitText(gunichar2 **text, glong *len);
 	bool GetPreeditText(gunichar2 **text, glong *len);
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);
@@ -72,6 +73,7 @@ private:
 	void InquirePhraseIndex();
 	char *CorrectPinyinString();
 	int ComputeInquireOffset();
+	EngineUnit *SearchPreferPhrase();
 	void ClearEngineUnitBuffer();
 	void ClearPinyinEngineBuffer();
 	void ClearPinyinEngineOldBuffer();
