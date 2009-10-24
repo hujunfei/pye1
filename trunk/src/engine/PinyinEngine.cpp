@@ -346,7 +346,7 @@ bool PinyinEngine::GetCommitText(gunichar2 **text, glong *len)
  */
 bool PinyinEngine::GetPreeditText(gunichar2 **text, glong *len)
 {
-	GSList *tlist;
+	GSList *tlist, *lastlist;
 	PhraseData *phrdt;
 	gunichar2 *ptr;
 	glong length;
@@ -358,8 +358,10 @@ bool PinyinEngine::GetPreeditText(gunichar2 **text, glong *len)
 		length += ((PhraseData *)tlist->data)->dtlen;
 		tlist = g_slist_next(tlist);
 	}
-	if (cclist)
-		length += ((PhraseData *)cclist->data)->dtlen + 1;
+	if (cclist) {
+		lastlist = g_slist_last(cclist);
+		length += ((PhraseData *)lastlist->data)->dtlen + 1;
+	}
 
 	/* 拷贝数据 */
 	*text = (gunichar2 *)g_malloc(sizeof(gunichar2) * length);
@@ -378,7 +380,7 @@ bool PinyinEngine::GetPreeditText(gunichar2 **text, glong *len)
 			(*len)++;
 			g_free(ptr);
 		}
-		phrdt = (PhraseData *)g_slist_last(cclist)->data;
+		phrdt = (PhraseData *)lastlist->data;
 		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
 		*len += phrdt->dtlen;
 	}

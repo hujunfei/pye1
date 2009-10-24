@@ -50,8 +50,6 @@ int main(int argc, char *argv[])
 			pye.GetAuxiliaryText(&data, &dtlen);
 			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
 		} else if (isdigit(ch)) {
-			if (ch == '3')
-				printf("fjdsalfjsadlf");
 			if ( (tlist = g_slist_nth(list, ch - '1'))) {
 				phrdt = (PhraseData *)tlist->data;
 				pye.SelectCachePhrase(phrdt);
