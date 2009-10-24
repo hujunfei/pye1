@@ -17,58 +17,83 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include "engine/InquireSysPhrase.h"
-#include "engine/InquireUserPhrase.h"
-#include "engine/ParseString.h"
+#include "engine/PinyinEngine.h"
 
 int main(int argc, char *argv[])
 {
-	InquireSysPhrase sysphrase;
-	InquireUserPhrase userphrase;
-	ParseString parse;
-	CharsIndex *chidx;
-	int length;
-	PhraseData *data;
-	char buf[100];
-	int8_t fuzzy[57];
-	GSList *list;
+	GSList *tlist, *list;
+	PinyinEngine pye;
+	PhraseData *phrdt;
+	guint length, count;
+	gunichar2 *data;
+	glong dtlen;
+	char ch;
 
-#if 0
-	sysphrase.CreateIndexTree("pinyin.mb");
-	userphrase.CreateIndexTree("user.mb");
-	memset(fuzzy, -1, 57);
-	fuzzy[30] = 56, fuzzy[56] = 30;
-	fuzzy[14] = 33, fuzzy[33] = 14;
-	sysphrase.SetFuzzyPinyinUnits(fuzzy);
+	pye.InitSysEngineUnits("mb.txt");
+	pye.InitUserEngineUnit("user.mb");
 
-	while (gets(buf)) {
-		parse.ParsePinyinString(buf, &chidx, &length);
-		list = sysphrase.SearchMatchPhrase(chidx, length);
-		while (list) {
-			data = sysphrase.AnalysisPhraseIndex((PhraseIndex *)list->data);
-			userphrase.AttachPhraseToTree(data);
-			printf("%s\n", g_utf16_to_utf8(data->data, data->dtlen, NULL, NULL, NULL));
-			list = g_slist_next(list);
+	while (ch = getchar()) {
+		if (isalpha(ch)) {
+			pye.InsertPinyinKey(ch);
+			pye.GetPagePhrase(&list, &length);
+			count = 1;
+			tlist = list;
+			while (tlist) {
+				phrdt = (PhraseData *)tlist->data;
+				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+						 phrdt->dtlen, NULL, NULL, NULL));
+				count++;
+				tlist = g_slist_next(tlist);
+			}
+			pye.GetPreeditText(&data, &dtlen);
+			printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+			pye.GetAuxiliaryText(&data, &dtlen);
+			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+		} else if (isdigit(ch)) {
+			if (ch == '3')
+				printf("fjdsalfjsadlf");
+			if ( (tlist = g_slist_nth(list, ch - '1'))) {
+				phrdt = (PhraseData *)tlist->data;
+				pye.SelectCachePhrase(phrdt);
+			}
+			if (pye.IsFinishInquirePhrase()) {
+				pye.GetCommitText(&data, &dtlen);
+				printf("\nCommit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+				pye.FinishInquirePhrase();
+			} else {
+				pye.GetPagePhrase(&list, &length);
+				count = 1;
+				tlist = list;
+				while (tlist) {
+					phrdt = (PhraseData *)tlist->data;
+					printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+					       phrdt->dtlen, NULL, NULL, NULL));
+					count++;
+					tlist = g_slist_next(tlist);
+				}
+				pye.GetPreeditText(&data, &dtlen);
+				printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+				pye.GetAuxiliaryText(&data, &dtlen);
+				printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+			}
+		} else if (ch == '=') {
+			pye.GetPagePhrase(&list, &length);
+			count = 1;
+			tlist = list;
+			while (tlist) {
+				phrdt = (PhraseData *)tlist->data;
+				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+						 phrdt->dtlen, NULL, NULL, NULL));
+				count++;
+				tlist = g_slist_next(tlist);
+			}
+			pye.GetPreeditText(&data, &dtlen);
+			printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+			pye.GetAuxiliaryText(&data, &dtlen);
+			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
 		}
-		userphrase.WritePhraseIndexTree();
 	}
-#else
-	userphrase.CreateIndexTree("user.mb");
-	memset(fuzzy, -1, 57);
-	fuzzy[30] = 56, fuzzy[56] = 30;
-	fuzzy[14] = 33, fuzzy[33] = 14;
-	userphrase.SetFuzzyPinyinUnits(fuzzy);
 
-	while (gets(buf)) {
-		parse.ParsePinyinString(buf, &chidx, &length);
-		list = userphrase.SearchMatchPhrase(chidx, length);
-		while (list) {
-			data = userphrase.AnalysisPhraseIndex((PhraseIndex *)list->data);
-			printf("%s\n", g_utf16_to_utf8(data->data, data->dtlen, NULL, NULL, NULL));
-			list = g_slist_next(list);
-		}
-	}
-#endif
 	return 0;
 }
 

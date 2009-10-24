@@ -70,7 +70,7 @@ PinyinEngine::~PinyinEngine()
 	/* 释放待查询拼音表 */
 	g_array_free(pytable, TRUE);
 	/* 释放汉字索引数组 */
-	g_free(chidx);
+	delete [] chidx;
 	/* 释放已接受词语链表 */
 	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
@@ -331,7 +331,7 @@ bool PinyinEngine::GetCommitText(gunichar2 **text, glong *len)
 	while (tlist) {
 		phrdt = (PhraseData *)tlist->data;
 		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
-		*len = phrdt->dtlen;
+		*len += phrdt->dtlen;
 		tlist = g_slist_next(tlist);
 	}
 
@@ -368,17 +368,19 @@ bool PinyinEngine::GetPreeditText(gunichar2 **text, glong *len)
 	while (tlist) {
 		phrdt = (PhraseData *)tlist->data;
 		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
-		*len = phrdt->dtlen;
+		*len += phrdt->dtlen;
 		tlist = g_slist_next(tlist);
 	}
 	if (cclist) {
-		ptr = g_utf8_to_utf16("\x20", 1, NULL, NULL, NULL);
-		memcpy(*text + *len, ptr, sizeof(gunichar2));
-		(*len)++;
-		g_free(ptr);
-		phrdt = (PhraseData *)tlist->data;
+		if (*len != 0) {
+			ptr = g_utf8_to_utf16("\x20", 1, NULL, NULL, NULL);
+			memcpy(*text + *len, ptr, sizeof(gunichar2));
+			(*len)++;
+			g_free(ptr);
+		}
+		phrdt = (PhraseData *)g_slist_last(cclist)->data;
 		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
-		*len = phrdt->dtlen;
+		*len += phrdt->dtlen;
 	}
 
 	return true;
@@ -424,14 +426,16 @@ bool PinyinEngine::GetAuxiliaryText(gunichar2 **text, glong *len)
 	while (tlist) {
 		phrdt = (PhraseData *)tlist->data;
 		memcpy(*text + *len, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
-		*len = phrdt->dtlen;
+		*len += phrdt->dtlen;
 		tlist = g_slist_next(tlist);
 	}
 	if (offset != chlen) {
-		ptr = g_utf8_to_utf16("\x20", 1, NULL, NULL, NULL);
-		memcpy(*text + *len, ptr, sizeof(gunichar2));
-		(*len)++;
-		g_free(ptr);
+		if (*len != 0) {
+			ptr = g_utf8_to_utf16("\x20", 1, NULL, NULL, NULL);
+			memcpy(*text + *len, ptr, sizeof(gunichar2));
+			(*len)++;
+			g_free(ptr);
+		}
 		ptr = g_utf8_to_utf16(pinyin, size, NULL, NULL, NULL);
 		memcpy(*text + *len, ptr, sizeof(gunichar2) * size);
 		*len += size;
@@ -469,7 +473,7 @@ bool PinyinEngine::GetPagePhrase(GSList **list, guint *len)
 		phrdt = eu->inqphr->AnalysisPhraseIndex(phridx);
 		delete phridx;
 		*list = g_slist_append(*list, phrdt);
-		cclist = g_slist_prepend(cclist, phrdt);
+		cclist = g_slist_prepend(cclist, phrdt);	//减少时间开支
 		(*len)++;
 		count++;
 	}
@@ -482,15 +486,20 @@ bool PinyinEngine::GetPagePhrase(GSList **list, guint *len)
  * @param phrdt 词语数据
  * @return 引擎执行状况
  */
-bool PinyinEngine::SelectCachePhrase(const char *phrdt)
+bool PinyinEngine::SelectCachePhrase(const PhraseData *phrdt)
 {
 	GSList *tlist;
 
+	/* 将词语数据加入已接受词语链表 */
 	aclist = g_slist_append(aclist, (gpointer)phrdt);
+	/* 清空缓冲数据 */
 	if ( (tlist = g_slist_find(cclist, phrdt)))
 		tlist->data = NULL;
 	ClearEngineUnitBuffer();
 	ClearPinyinEngineTempBuffer();
+	/* 如果需要则继续查询词语 */
+	if (!IsFinishInquirePhrase())
+		InquirePhraseIndex();
 
 	return true;
 }
@@ -590,7 +599,8 @@ void PinyinEngine::InquirePhraseIndex()
 	tlist = eulist;
 	while (tlist) {
 		eu = (EngineUnit *)tlist->data;
-		eu->inqphr->SearchMatchPhrase(chidx + offset, chlen - offset);
+		eu->phrlist = eu->inqphr->SearchMatchPhrase(chidx + offset,
+							 chlen - offset);
 		tlist = g_slist_next(tlist);
 	}
 }
@@ -601,12 +611,12 @@ void PinyinEngine::InquirePhraseIndex()
  */
 char *PinyinEngine::CorrectPinyinString()
 {
-	GByteArray *cpytable;
+	GArray *cpytable;
 	guint length, count;
 	const char *ptr;
 	char *pinyin;
 
-	cpytable = g_byte_array_sized_new(pytable->len << 1);
+	cpytable = g_array_sized_new(TRUE, FALSE, 1, pytable->len << 1);
 	length = 0;
 	while (length < pytable->len) {
 		count = 0;
@@ -619,15 +629,14 @@ char *PinyinEngine::CorrectPinyinString()
 		if (count < crttable->len) {
 			length += strlen(ptr);
 			ptr = *((const char **)crttable->pdata + count + 1);
-			cpytable = g_byte_array_append(cpytable, (const guint8 *)ptr,
-									 strlen(ptr));
+			cpytable = g_array_append_vals(cpytable, ptr, strlen(ptr));
 		} else {
-			cpytable = g_byte_array_append(cpytable,
-					 (const guint8 *)pytable->data + length, 1);
+			cpytable = g_array_append_vals(cpytable,
+					 pytable->data + length, 1);
 			length++;
 		}
 	}
-	pinyin = (char *)g_byte_array_free(cpytable, FALSE);
+	pinyin = g_array_free(cpytable, FALSE);
 
 	return pinyin;
 }
@@ -716,7 +725,7 @@ void PinyinEngine::ClearPinyinEngineBuffer()
 	pytable = g_array_remove_range(pytable, 0, pytable->len);
 	cursor = 0;
 	/* 释放汉字索引数组 */
-	g_free(chidx);
+	delete [] chidx;
 	chidx = NULL;
 	chlen = 0;
 	/* 释放已接受词语链表 */
