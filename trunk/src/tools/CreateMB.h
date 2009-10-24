@@ -30,17 +30,20 @@ public:
 	glong dtlen;		///< 词语的utf16编码数据的长度
 	uint freq;		///< 词语的使用频率
 };
-
 /**
  * 遍历树的参数结构.
  */
-typedef struct {
+class TravTreePara {
+public:
+	TravTreePara();
+	~TravTreePara();
+
 	int fd;		///< 文件描述符
 	union {
 		uint leaves;	///< 叶子数
 		off_t offset;	///< 偏移量
 	}extra;
-}TravTreePara;
+};
 #define eleaves extra.leaves
 #define eoffset extra.offset
 

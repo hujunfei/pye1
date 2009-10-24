@@ -26,6 +26,10 @@ PhraseDatum::~PhraseDatum()
 	delete [] chidx;
 	g_free(data);
 }
+TravTreePara::TravTreePara():fd(-1)
+{}
+TravTreePara::~TravTreePara()
+{}
 /** @} */
 
 /**

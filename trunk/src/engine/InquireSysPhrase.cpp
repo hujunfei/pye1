@@ -253,7 +253,7 @@ GSList *InquireSysPhrase::SearchIndexMatchPhrase(int8_t index,
 		while (number < lengthp->indexs) {
 			if (MatchCharsIndex(lengthp->chidx + length * number,
 							 chidx, length)) {
-				phridx = (PhraseIndex *)g_malloc(sizeof(PhraseIndex));
+				phridx = new PhraseIndex;
 				phridx->chidx = lengthp->chidx + length * number;
 				phridx->chlen = length;
 				phridx->offset = root.offset + lengthp->offset +
@@ -313,7 +313,7 @@ PhraseIndex *InquireSysPhrase::SearchIndexPreferPhrase(int8_t index,
 	/* 检查处理结果 */
 	if (!preflenp)
 		return NULL;
-	phridx = (PhraseIndex *)g_malloc(sizeof(PhraseIndex));
+	phridx = new PhraseIndex;
 	phridx->chidx = preflenp->chidx + preflen * prefnum;
 	phridx->chlen = preflen;
 	phridx->offset = root.offset + preflenp->offset +

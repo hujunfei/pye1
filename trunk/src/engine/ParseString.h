@@ -23,7 +23,6 @@ typedef enum {
 	MINOR_TYPE = 1 << 1,	///< 在汉字拼音中只能处于第二个位置
 	MAJIN_TYPE = MAJOR_TYPE | MINOR_TYPE,	///< 在汉字拼音中的位置不受限制
 }PyUnitFlags;
-
 /**
  * 拼音单元的信息结构.
  */

@@ -27,7 +27,7 @@ EngineUnit::~EngineUnit()
 {
 	delete inqphr;
 	for (GSList *tlist = phrlist; tlist; tlist = g_slist_next(tlist))
-		g_free(tlist->data);
+		delete (PhraseIndex *)tlist->data;
 	g_slist_free(phrlist);
 }
 /** @} */
@@ -72,16 +72,12 @@ PinyinEngine::~PinyinEngine()
 	/* 释放汉字索引数组 */
 	g_free(chidx);
 	/* 释放已接受词语链表 */
-	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist)) {
-		g_free(((PhraseData *)tlist->data)->data);
+	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
-	}
 	g_slist_free(aclist);
 	/* 释放缓冲词语链表 */
-	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist)) {
-		g_free(((PhraseData *)tlist->data)->data);
+	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
-	}
 	g_slist_free(cclist);
 	/* 释放码表路径 */
 	g_free(userpath);
@@ -294,15 +290,12 @@ bool PinyinEngine::BackspacePinyinKey()
 bool PinyinEngine::RevokeSelectedPhrase()
 {
 	GSList *tlist;
-	PhraseData *phrdt;
 
 	/* 移除最后被选中的词语 */
 	if (!aclist)
 		return false;
 	tlist = g_slist_last(aclist);
-	phrdt = (PhraseData *)tlist->data;
-	g_free(phrdt->data);
-	delete phrdt;
+	delete (PhraseData *)tlist->data;
 	aclist = g_slist_delete_link(aclist, tlist);
 	/* 清空必要缓冲数据 */
 	ClearEngineUnitBuffer();
@@ -474,7 +467,7 @@ bool PinyinEngine::GetPagePhrase(GSList **list, guint *len)
 		phridx = (PhraseIndex *)eu->phrlist->data;
 		eu->phrlist = g_slist_delete_link(eu->phrlist, eu->phrlist);
 		phrdt = eu->inqphr->AnalysisPhraseIndex(phridx);
-		g_free(phridx);
+		delete phridx;
 		*list = g_slist_append(*list, phrdt);
 		cclist = g_slist_prepend(cclist, phrdt);
 		(*len)++;
@@ -705,7 +698,7 @@ void PinyinEngine::ClearEngineUnitBuffer()
 		eu = (EngineUnit *)tlist->data;
 		phrlist = eu->phrlist;
 		while (phrlist) {
-			g_free(phrlist->data);
+			delete (PhraseIndex *)phrlist->data;
 			phrlist = g_slist_next(phrlist);
 		}
 		g_slist_free(phrlist);
@@ -727,17 +720,13 @@ void PinyinEngine::ClearPinyinEngineBuffer()
 	chidx = NULL;
 	chlen = 0;
 	/* 释放已接受词语链表 */
-	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist)) {
-		g_free(((PhraseData *)tlist->data)->data);
+	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
-	}
 	g_slist_free(aclist);
 	aclist = NULL;
 	/* 释放缓冲词语链表 */
-	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist)) {
-		g_free(((PhraseData *)tlist->data)->data);
+	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
-	}
 	g_slist_free(cclist);
 	cclist = NULL;
 }
@@ -748,10 +737,8 @@ void PinyinEngine::ClearPinyinEngineBuffer()
 void PinyinEngine::ClearPinyinEngineOldBuffer()
 {
 	/* 释放已接受词语链表 */
-	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist)) {
-		g_free(((PhraseData *)tlist->data)->data);
+	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
-	}
 	g_slist_free(aclist);
 	aclist = NULL;
 }
@@ -762,10 +749,8 @@ void PinyinEngine::ClearPinyinEngineOldBuffer()
 void PinyinEngine::ClearPinyinEngineTempBuffer()
 {
 	/* 释放缓冲词语链表 */
-	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist)) {
-		g_free(((PhraseData *)tlist->data)->data);
+	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist))
 		delete (PhraseData *)tlist->data;
-	}
 	g_slist_free(cclist);
 	cclist = NULL;
 }

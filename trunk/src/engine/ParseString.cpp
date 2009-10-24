@@ -77,10 +77,16 @@ PinyinUnit pyunits[] = {
 	{NULL, ATOM_TYPE}
 };
 
+/**
+ * 类构造函数.
+ */
 ParseString::ParseString()
 {
 }
 
+/**
+ * 类析构函数.
+ */
 ParseString::~ParseString()
 {
 }
