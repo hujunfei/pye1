@@ -64,11 +64,13 @@ public:
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);
 	bool GetPagePhrase(GSList **list, guint *len);
 	bool SelectCachePhrase(const PhraseData *phrdt);
+	bool FeedbackSelectedPhrase();
 	bool IsFinishInquirePhrase();
 	bool FinishInquirePhrase();
 private:
 	bool BreakMbfileString(char *lineptr, const char **mfile, const char **priority);
 	EngineUnit *CreateEngineUnit(const char *mfile, int priority, ENGINE_TYPE type);
+	PhraseData *CreateUserPhrase();
 	void CreateCharsIndex();
 	void InquirePhraseIndex();
 	char *CorrectPinyinString();

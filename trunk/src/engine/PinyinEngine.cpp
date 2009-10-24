@@ -138,6 +138,7 @@ void PinyinEngine::InitUserEngineUnit(const char *user)
 	dirname = g_path_get_dirname(user);
 	bakpath = g_strdup_printf("%s/%s", dirname, "bak.mb");
 	g_free(dirname);
+	unlink(bakpath);	//删除可能错误的文件
 	pye_copy_file(bakpath, userpath);
 
 	/* 创建引擎 */
@@ -177,8 +178,9 @@ void PinyinEngine::AddFuzzyPinyinUnit(const char *unit1, const char *unit2)
  */
 void PinyinEngine::BakUserPhrase()
 {
-	EngineUnit *eu;
 	GSList *tlist;
+	EngineUnit *eu;
+	char *tmppath;
 
 	/* 查找用户词语引擎 */
 	tlist = eulist;
@@ -188,12 +190,15 @@ void PinyinEngine::BakUserPhrase()
 			break;
 		tlist = g_slist_next(tlist);
 	}
+	if (!tlist)
+		return;
 
-	/* 写出内存数据，并更新用户词语文件 */
-	if (tlist) {
-		((InquireUserPhrase *)eu->inqphr)->WritePhraseIndexTree();
-		pye_copy_file(userpath, bakpath);
-	}
+	/* 写出内存数据，并更新用户词语文件(多绕圈可以避免掉电错误) */
+	((InquireUserPhrase *)eu->inqphr)->WritePhraseIndexTree();
+	tmppath = g_strdup_printf("%s~", userpath);
+	pye_copy_file(tmppath, bakpath);
+	rename(tmppath, userpath);
+	g_free(tmppath);
 }
 
 /**
@@ -516,6 +521,47 @@ bool PinyinEngine::IsFinishInquirePhrase()
 }
 
 /**
+ * 向用户码表引擎反馈被用户选中的词语.
+ * @return 引擎执行状况
+ */
+bool PinyinEngine::FeedbackSelectedPhrase()
+{
+	GSList *tlist;
+	EngineUnit *eu;
+	PhraseData *phrdt;
+
+	/* 查询用户码表引擎单元 */
+	tlist = eulist;
+	while (tlist) {
+		eu = (EngineUnit *)tlist->data;
+		if (eu->type == USER_TYPE)
+			break;
+		tlist = g_slist_next(tlist);
+	}
+	if (!tlist)
+		return false;
+
+	/* 反馈词语数据 */
+	switch (g_slist_length(aclist)) {
+	case 0:	//没有数据,无需处理
+		break;
+	case 1:	//现成的词语,直接处理即可
+		phrdt = (PhraseData *)aclist->data;
+		if (phrdt->offset == (off_t)(-1))
+			((InquireUserPhrase *)eu->inqphr)->InsertPhraseToTree(phrdt);
+		else
+			((InquireUserPhrase *)eu->inqphr)->IncreasePhraseFreq(phrdt);
+		break;
+	default:	//需要先合并词语数据
+		phrdt = CreateUserPhrase();
+		((InquireUserPhrase *)eu->inqphr)->InsertPhraseToTree(phrdt);
+		delete [] (CharsIndex *)phrdt->chidx;	//必须单独释放
+		delete phrdt;
+		break;
+	}
+}
+
+/**
  * 通告拼音引擎词语查询已经完成.
  * @return 引擎执行状况
  */
@@ -566,13 +612,68 @@ EngineUnit *PinyinEngine::CreateEngineUnit(const char *mfile, int priority,
 	EngineUnit *eu;
 
 	eu = new EngineUnit;
-	eu->inqphr = new InquireSysPhrase;
+	switch (type) {
+	case SYSTEM_TYPE:
+		eu->inqphr = new InquireSysPhrase;
+		break;
+	case USER_TYPE:
+		eu->inqphr = new InquireUserPhrase;
+		break;
+	default:
+		pwarning("Fatal Error!\nEngine types can not be identified!\n");
+		eu->inqphr = NULL;
+		break;
+	}
 	eu->inqphr->CreateIndexTree(mfile);
 	eu->phrlist = NULL;
 	eu->priority = priority;
 	eu->type = type;
 
 	return eu;
+}
+
+/**
+ * 创建用户词语.
+ * @return 词语数据
+ */
+PhraseData *PinyinEngine::CreateUserPhrase()
+{
+	GSList *tlist;
+	PhraseData *phrdt, *tphrdt;
+	glong dtlen;
+	int chlen;
+
+	/* 计算需要的内存长度 */
+	chlen = 0;
+	dtlen = 0;
+	tlist = aclist;
+	while (tlist) {
+		tphrdt = (PhraseData *)tlist->data;
+		chlen += tphrdt->chlen;
+		dtlen += tphrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+
+	/* 创建新的词语数据 */
+	phrdt = new PhraseData;
+	phrdt->chidx = new CharsIndex[chlen];
+	phrdt->chlen = 0;
+	phrdt->offset = (off_t)(-1);
+	phrdt->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * dtlen);
+	phrdt->dtlen = 0;
+	tlist = aclist;
+	while (tlist) {
+		tphrdt = (PhraseData *)tlist->data;
+		memcpy((CharsIndex *)phrdt->chidx + phrdt->chlen, tphrdt->chidx,
+					 sizeof(CharsIndex) * tphrdt->chlen);
+		phrdt->chlen += tphrdt->chlen;
+		memcpy(phrdt->data + phrdt->dtlen, tphrdt->data,
+				 sizeof(gunichar2) * tphrdt->dtlen);
+		phrdt->dtlen += tphrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+
+	return phrdt;
 }
 
 /**

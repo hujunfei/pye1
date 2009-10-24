@@ -57,7 +57,9 @@ int main(int argc, char *argv[])
 			if (pye.IsFinishInquirePhrase()) {
 				pye.GetCommitText(&data, &dtlen);
 				printf("\nCommit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+				pye.FeedbackSelectedPhrase();
 				pye.FinishInquirePhrase();
+				pye.BakUserPhrase();
 			} else {
 				pye.GetPagePhrase(&list, &length);
 				count = 1;
