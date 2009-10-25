@@ -63,6 +63,7 @@ public:
 	bool GetPreeditText(gunichar2 **text, glong *len);
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);
 	bool GetPagePhrase(GSList **list, guint *len);
+	bool IsExistCachePhrase(const PhraseData *phrdt);
 	bool SelectCachePhrase(const PhraseData *phrdt);
 	bool FeedbackSelectedPhrase();
 	bool IsFinishInquirePhrase();

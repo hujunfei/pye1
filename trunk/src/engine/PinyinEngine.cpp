@@ -479,17 +479,43 @@ bool PinyinEngine::GetPagePhrase(GSList **list, guint *len)
 		eu->phrlist = g_slist_delete_link(eu->phrlist, eu->phrlist);
 		phrdt = eu->inqphr->AnalysisPhraseIndex(phridx);
 		delete phridx;
-		*list = g_slist_append(*list, phrdt);
-		cclist = g_slist_prepend(cclist, phrdt);	//减少时间开支
-		(*len)++;
-		count++;
+		if (!IsExistCachePhrase(phrdt)) {
+			*list = g_slist_append(*list, phrdt);
+			cclist = g_slist_prepend(cclist, phrdt);	//减少时间开支
+			(*len)++;
+			count++;
+		} else
+			delete phrdt;
 	}
 
 	return (count != 0);
 }
 
 /**
- * 选定缓冲区中的词语.
+ * 考察此词语是否已经存在词语数据缓冲区中.
+ * @param phrdt 词语数据
+ * @return 是否已经存在
+ */
+bool PinyinEngine::IsExistCachePhrase(const PhraseData *phrdt)
+{
+	GSList *tlist;
+	PhraseData *tphrdt;
+
+	tlist = cclist;
+	while (tlist) {
+		tphrdt = (PhraseData *)tlist->data;
+		if (tphrdt->dtlen == phrdt->dtlen
+			 && memcmp(tphrdt->data, phrdt->data,
+				 sizeof(gunichar2) * tphrdt->dtlen) == 0)
+			break;
+		tlist = g_slist_next(tlist);
+	}
+
+	return tlist;
+}
+
+/**
+ * 选定词语数据缓冲区中的词语数据.
  * @param phrdt 词语数据
  * @return 引擎执行状况
  */
