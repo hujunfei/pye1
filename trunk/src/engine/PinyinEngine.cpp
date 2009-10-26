@@ -30,30 +30,6 @@ EngineUnit::~EngineUnit()
 		delete (PhraseIndex *)tlist->data;
 	g_slist_free(phrlist);
 }
-EngineSnapshot::EngineSnapshot():eulist(NULL), pytable(NULL), cursor(0),
- chidx(NULL), chlen(0), aclist(NULL), cclist(NULL)
-{}
-EngineSnapshot::~EngineSnapshot()
-{
-	/* 释放引擎链表 */
-	for (GSList *tlist = eulist; tlist; tlist = g_slist_next(tlist)) {
-		((EngineUnit *)tlist->data)->inqphr = NULL;	//引擎不属本类所有
-		delete (EngineUnit *)tlist->data;
-	}
-	g_slist_free(eulist);
-	/* 释放待查询拼音表 */
-	g_array_free(pytable, TRUE);
-	/* 释放汉字索引数组 */
-	delete [] chidx;
-	/* 释放已接受词语链表 */
-	for (GSList *tlist = aclist; tlist; tlist = g_slist_next(tlist))
-		delete (PhraseData *)tlist->data;
-	g_slist_free(aclist);
-	/* 释放缓冲词语链表 */
-	for (GSList *tlist = cclist; tlist; tlist = g_slist_next(tlist))
-		delete (PhraseData *)tlist->data;
-	g_slist_free(cclist);
-}
 /** @} */
 
 /**
@@ -195,93 +171,6 @@ void PinyinEngine::AddFuzzyPinyinUnit(const char *unit1, const char *unit2)
 	uidx2 = parse.GetStringIndex(unit2);
 	*(fztable + uidx1) = uidx2;
 	*(fztable + uidx2) = uidx1;
-}
-
-/**
- * 保存拼音引擎的当前快照.
- * @return 引擎快照
- * @note 此函数执行后，本引擎所正在处理的事务将回到初始状态.
- */
-EngineSnapshot *PinyinEngine::SaveEngineSnapshot()
-{
-	GSList *tlist;
-	EngineSnapshot *es;
-	EngineUnit *eu, *eunit;
-
-	/* 创建引擎快照 */
-	es = new EngineSnapshot;
-
-	/* 备份引擎单元缓冲数据 */
-	tlist = eulist;
-	while (tlist) {
-		eu = (EngineUnit *)tlist->data;
-		eunit = new EngineUnit(*eu);
-		es->eulist = g_slist_append(es->eulist, eunit);
-		eu->phrlist = NULL;
-		tlist = g_slist_next(tlist);
-	}
-	/* 备份拼音表 */
-	es->pytable = g_array_sized_new(TRUE, FALSE, 1, pytable->len);
-	es->pytable = g_array_append_vals(es->pytable, pytable->data, pytable->len);
-	es->cursor = cursor;
-	pytable = g_array_remove_range(pytable, 0, pytable->len);
-	cursor = 0;
-	/* 备份汉字索引数组 */
-	es->chidx = chidx;
-	es->chlen = chlen;
-	chidx = NULL;
-	chlen = 0;
-	/* 备份词语链表 */
-	es->aclist = aclist;
-	es->cclist = cclist;
-	aclist = cclist = NULL;
-
-	return es;
-}
-
-/**
- * 还原引擎快照.
- * @param es 引擎快照
- * @note 此函数执行后，引擎快照将不可再用.
- * @note 请保证此函数执行前，没有事务的残留状态，否则可能会导致内存泄漏.
- */
-void PinyinEngine::RevertEngineSnapshot(EngineSnapshot *es)
-{
-	GSList *tlist, *flist;
-	EngineUnit *eu, *eunit;
-
-	/* 还原引擎单元缓冲数据 */
-	tlist = es->eulist;
-	while (tlist) {
-		eunit = (EngineUnit *)tlist->data;
-		flist = eulist;
-		while (flist) {
-			eu = (EngineUnit *)flist->data;
-			if (eu->inqphr == eunit->inqphr)
-				break;
-			flist = g_slist_next(flist);
-		}
-		if (flist) {
-			eu->phrlist = eunit->phrlist;
-			eunit->phrlist = NULL;
-		}
-		tlist = g_slist_next(tlist);
-	}
-	/* 还原拼音表 */
-	pytable = g_array_remove_range(pytable, 0, pytable->len);
-	pytable = g_array_append_vals(pytable, es->pytable->data, es->pytable->len);
-	cursor = es->cursor;
-	es->pytable = g_array_remove_range(es->pytable, 0, es->pytable->len);
-	es->cursor = 0;
-	/* 还原汉字索引数组 */
-	chidx = es->chidx;
-	chlen = es->chlen;
-	es->chidx = NULL;
-	es->chlen = 0;
-	/* 还原词语链表 */
-	aclist = es->aclist;
-	cclist = es->cclist;
-	es->aclist = es->cclist = NULL;
 }
 
 /**

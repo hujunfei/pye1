@@ -3,8 +3,6 @@
 //
 // Description:
 // 拼音引擎接口，此类管理着多个拼音查询类，并借助它们完成引擎的具体工作
-// 非线程安全，请不要将多个事务同时加载与此类
-// 本类工作时会占用大量内存，请不要在一个进程内创建多个实例
 // 系统码表配置文件格式: 文件名 优先级
 // e.g.:	pinyin1.mb 18
 //		pinyin2.mb 12
@@ -40,23 +38,6 @@ public:
 	int priority;		///< 引擎单元优先级
 	ENGINE_TYPE type;	///< 引擎单元类型
 };
-/**
- * 引擎快照.
- * 用于保存事务的某一状态，或恢复事务到某一状态.\n
- */
-class EngineSnapshot {
-public:
-	EngineSnapshot();
-	~EngineSnapshot();
-
-	GSList *eulist;		///< 引擎单元缓冲数据链表
-	GArray *pytable;	///< 待查询拼音表
-	guint cursor;		///< 光标位置
-	CharsIndex *chidx;	///< 汉字索引数组
-	int chlen;		///< 汉字索引数组长度
-	GSList *aclist;		///< 已接受词语链表
-	GSList *cclist;		///< 缓冲词语链表
-};
 
 /**
  * 拼音引擎.
@@ -71,9 +52,6 @@ public:
 	void InitUserEngineUnit(const char *user);
 	void AddCorrectPinyinPair(const char *pinyin1, const char *pinyin2);
 	void AddFuzzyPinyinUnit(const char *unit1, const char *unit2);
-
-	EngineSnapshot *SaveEngineSnapshot();
-	void RevertEngineSnapshot(EngineSnapshot *es);
 	void BakUserPhrase();
 
 	bool MoveCursorPoint(int offset);
