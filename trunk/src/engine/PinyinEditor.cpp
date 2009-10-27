@@ -584,11 +584,12 @@ EunitPhrase *PinyinEditor::SearchPreferEunitPhrase()
 	GSList *tlist;
 	EunitPhrase *euphr, *teuphr;
 	PhraseIndex *phridx;
-	int chlen;
+	int chlen, priority;
 
 	/* 初始化数据 */
 	euphr = NULL;
 	chlen = 0;
+	priority = 0;
 
 	/* 查找 */
 	tlist = euphrlist;
@@ -596,9 +597,12 @@ EunitPhrase *PinyinEditor::SearchPreferEunitPhrase()
 		teuphr = (EunitPhrase *)tlist->data;
 		if (teuphr->phrlist) {
 			phridx = (PhraseIndex *)teuphr->phrlist->data;
-			if (phridx->chlen > chlen) {
+			if (phridx->chlen > chlen
+				 || phridx->chlen == chlen
+					 && teuphr->eunit->priority > priority) {
 				euphr = teuphr;
 				chlen = phridx->chlen;
+				priority = teuphr->eunit->priority;
 			}
 		}
 		tlist = g_slist_next(tlist);

@@ -18,81 +18,84 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "engine/PhraseEngine.h"
+#include "engine/PinyinEditor.h"
 
 int main(int argc, char *argv[])
 {
-// 	GSList *tlist, *list;
-// 	PinyinEngine pye;
-// 	PhraseData *phrdt;
-// 	guint length, count;
-// 	gunichar2 *data;
-// 	glong dtlen;
-// 	char ch;
-//
-// 	pye.InitSysEngineUnits("mb.txt");
-// 	pye.InitUserEngineUnit("user.mb");
-//
-// 	while (ch = getchar()) {
-// 		if (isalpha(ch)) {
-// 			pye.InsertPinyinKey(ch);
-// 			pye.GetPagePhrase(&list, &length);
-// 			count = 1;
-// 			tlist = list;
-// 			while (tlist) {
-// 				phrdt = (PhraseData *)tlist->data;
-// 				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
-// 						 phrdt->dtlen, NULL, NULL, NULL));
-// 				count++;
-// 				tlist = g_slist_next(tlist);
-// 			}
-// 			pye.GetPreeditText(&data, &dtlen);
-// 			printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 			pye.GetAuxiliaryText(&data, &dtlen);
-// 			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 		} else if (isdigit(ch)) {
-// 			if ( (tlist = g_slist_nth(list, ch - '1'))) {
-// 				phrdt = (PhraseData *)tlist->data;
-// 				pye.SelectCachePhrase(phrdt);
-// 			}
-// 			if (pye.IsFinishInquirePhrase()) {
-// 				pye.GetCommitText(&data, &dtlen);
-// 				printf("\nCommit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 				pye.FeedbackSelectedPhrase();
-// 				pye.FinishInquirePhrase();
-// 				pye.BakUserPhrase();
-// 			} else {
-// 				pye.GetPagePhrase(&list, &length);
-// 				count = 1;
-// 				tlist = list;
-// 				while (tlist) {
-// 					phrdt = (PhraseData *)tlist->data;
-// 					printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
-// 					       phrdt->dtlen, NULL, NULL, NULL));
-// 					count++;
-// 					tlist = g_slist_next(tlist);
-// 				}
-// 				pye.GetPreeditText(&data, &dtlen);
-// 				printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 				pye.GetAuxiliaryText(&data, &dtlen);
-// 				printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 			}
-// 		} else if (ch == '=') {
-// 			pye.GetPagePhrase(&list, &length);
-// 			count = 1;
-// 			tlist = list;
-// 			while (tlist) {
-// 				phrdt = (PhraseData *)tlist->data;
-// 				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
-// 						 phrdt->dtlen, NULL, NULL, NULL));
-// 				count++;
-// 				tlist = g_slist_next(tlist);
-// 			}
-// 			pye.GetPreeditText(&data, &dtlen);
-// 			printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 			pye.GetAuxiliaryText(&data, &dtlen);
-// 			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
-// 		}
-// 	}
+	GSList *tlist, *list;
+	PhraseEngine phregn;
+	PinyinEditor pyedit(&phregn);
+	PhraseData *phrdt;
+	guint length, count;
+	gunichar2 *data;
+	glong dtlen;
+	char ch;
+
+	phregn.CreateSysEngineUnits("mb.txt");
+	phregn.CreateUserEngineUnit("user.mb");
+	phregn.AddFuzzyPinyinUnit("zh", "z");
+
+	while (ch = getchar()) {
+		if (isalpha(ch)) {
+			pyedit.InsertPinyinKey(ch);
+			pyedit.GetPagePhrase(&list, &length);
+			count = 1;
+			tlist = list;
+			while (tlist) {
+				phrdt = (PhraseData *)tlist->data;
+				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+						 phrdt->dtlen, NULL, NULL, NULL));
+				count++;
+				tlist = g_slist_next(tlist);
+			}
+			pyedit.GetPreeditText(&data, &dtlen);
+			printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+			pyedit.GetAuxiliaryText(&data, &dtlen);
+			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+		} else if (isdigit(ch)) {
+			if ( (tlist = g_slist_nth(list, ch - '1'))) {
+				phrdt = (PhraseData *)tlist->data;
+				pyedit.SelectCachePhrase(phrdt);
+			}
+			if (pyedit.IsFinishInquirePhrase()) {
+				pyedit.GetCommitText(&data, &dtlen);
+				printf("\nCommit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+				pyedit.FeedbackSelectedPhrase();
+				pyedit.FinishInquirePhrase();
+				phregn.BakUserEnginePhrase();
+			} else {
+				pyedit.GetPagePhrase(&list, &length);
+				count = 1;
+				tlist = list;
+				while (tlist) {
+					phrdt = (PhraseData *)tlist->data;
+					printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+					       phrdt->dtlen, NULL, NULL, NULL));
+					count++;
+					tlist = g_slist_next(tlist);
+				}
+				pyedit.GetPreeditText(&data, &dtlen);
+				printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+				pyedit.GetAuxiliaryText(&data, &dtlen);
+				printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+			}
+		} else if (ch == '=') {
+			pyedit.GetPagePhrase(&list, &length);
+			count = 1;
+			tlist = list;
+			while (tlist) {
+				phrdt = (PhraseData *)tlist->data;
+				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+						 phrdt->dtlen, NULL, NULL, NULL));
+				count++;
+				tlist = g_slist_next(tlist);
+			}
+			pyedit.GetPreeditText(&data, &dtlen);
+			printf("\nPreedit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+			pyedit.GetAuxiliaryText(&data, &dtlen);
+			printf("\nAuxiliary: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
+		}
+	}
 
 	return 0;
 }

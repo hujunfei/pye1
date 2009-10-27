@@ -81,7 +81,6 @@ void PhraseEngine::CreateSysEngineUnits(const char *sys)
 {
 	FILE *stream;
 	EngineUnit *eu;
-	GSList *tlist;
 	const char *file, *priority;
 	char *lineptr, *dirname, *path;
 	size_t n;
@@ -102,9 +101,7 @@ void PhraseEngine::CreateSysEngineUnits(const char *sys)
 		path = g_strdup_printf("%s/%s", dirname, file);
 		eu = CreateEngineUnit(path, atoi(priority), SYSTEM_TYPE);
 		g_free(path);
-		for (tlist = eulist; tlist && ((EngineUnit *)tlist->data)->priority >
-					 eu->priority; tlist = g_slist_next(tlist));
-		eulist = g_slist_insert_before(eulist, tlist, eu);
+		eulist = g_slist_prepend(eulist, eu);	//减少时间开支
 	}
 	g_free(dirname);
 	free(lineptr);
@@ -345,6 +342,7 @@ EngineUnit *PhraseEngine::CreateEngineUnit(const char *mfile, int priority,
 		break;
 	}
 	eu->inqphr->CreateIndexTree(mfile);
+	eu->inqphr->SetFuzzyPinyinUnits(fztable);
 	eu->priority = priority;
 	eu->type = type;
 
