@@ -183,6 +183,7 @@ void InquireUserPhrase::InsertPhraseToTree(const PhraseData *phrdt)
 	UserCharsLengthPoint *lengthp;
 	CharsIndex *chidx;
 	UserPhraseInfo *phrinf;
+	guint number;
 
 	/* 获取词语将要插入的按汉字索引值分类的索引点. */
 	if (root.indexs <= phrdt->chidx->major) {
@@ -214,25 +215,40 @@ void InquireUserPhrase::InsertPhraseToTree(const PhraseData *phrdt)
 	}
 	lengthp = indexp->table + phrdt->chlen - 1;
 
+	/* 定位词语位置 */
+	number = 0;
+	while (number < lengthp->indexs) {
+		/* 新插入的词语拥有更高优先级 */
+		if ((lengthp->table + number)->freq > 1)
+			break;
+		number++;
+	}
 	/* 将词语的汉字索引数组添加到索引点下 */
 	chidx = lengthp->chidx;
 	lengthp->chidx = new CharsIndex[phrdt->chlen * (lengthp->indexs + 1)];
-	memcpy(lengthp->chidx, phrdt->chidx, sizeof(CharsIndex) * phrdt->chlen);
-	if (lengthp->indexs != 0) {
-		memcpy(lengthp->chidx + phrdt->chlen, chidx, sizeof(CharsIndex) *
-						 phrdt->chlen * lengthp->indexs);
+	if (number != 0)
+		memcpy(lengthp->chidx, chidx, sizeof(CharsIndex) * phrdt->chlen * number);
+	memcpy(lengthp->chidx + phrdt->chlen * number, phrdt->chidx,
+				 sizeof(CharsIndex) * phrdt->chlen);
+	if (number != lengthp->indexs)
+		memcpy(lengthp->chidx + phrdt->chlen * (number + 1),
+				 chidx + phrdt->chlen * number,
+				 sizeof(CharsIndex) * phrdt->chlen *
+					 (lengthp->indexs - number));
+	if (chidx)
 		delete [] chidx;
-	}
 	/* 将词语的相关信息添加到索引点下 */
 	phrinf = lengthp->table;
 	lengthp->table = new UserPhraseInfo[lengthp->indexs + 1];
-	lengthp->table->offset = root.offset;
-	lengthp->table->freq = 1;	//预设新词语使用频率为1
-	if (lengthp->indexs != 0) {
-		memcpy(lengthp->table + 1, phrinf, sizeof(UserPhraseInfo) *
-							 lengthp->indexs);
+	if (number != 0)
+		memcpy(lengthp->table, phrinf, sizeof(UserPhraseInfo) * number);
+	(lengthp->table + number)->offset = root.offset;
+	(lengthp->table + number)->freq = 1;	//预设新词语使用频率为1
+	if (number != lengthp->indexs)
+		memcpy(lengthp->table + number + 1, phrinf + number,
+			 sizeof(UserPhraseInfo) * (lengthp->indexs - number));
+	if (phrinf)
 		delete [] phrinf;
-	}
 	/* 更新数据 */
 	(lengthp->indexs)++;
 	lseek(root.fd, root.offset, SEEK_SET);
@@ -317,7 +333,8 @@ void InquireUserPhrase::IncreasePhraseFreq(const PhraseData *phrdt)
 	/* 查询新位置 */
 	position = number + 1;
 	while (position < lengthp->indexs) {
-		if ((lengthp->table + number)->freq <= (lengthp->table + position)->freq)
+		/* 最近选中的词语拥有更高优先级 */
+		if ((lengthp->table + position)->freq > (lengthp->table + number)->freq)
 			break;
 		position++;
 	}

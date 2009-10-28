@@ -32,6 +32,7 @@
 #include <strings.h>
 #include <errno.h>
 #include <err.h>
+#include <getopt.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
