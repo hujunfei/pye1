@@ -30,7 +30,6 @@ public:
 	bool GetPreeditText(gunichar2 **text, glong *len);
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);
 	bool GetPagePhrase(GSList **list, guint *len);
-	bool IsExistCachePhrase(const PhraseData *phrdt);
 	bool SelectCachePhrase(PhraseData *phrdt);
 	bool FeedbackSelectedPhrase();
 	bool IsFinishInquirePhrase();
@@ -42,6 +41,7 @@ private:
 	int ComputeInquireOffset();
 	char *CorrectPinyinString();
 	EunitPhrase *SearchPreferEunitPhrase();
+	bool IsExistCachePhrase(const PhraseData *phrdt);
 	void ClearEngineUnitBuffer();
 	void ClearPinyinEditorBuffer();
 	void ClearPinyinEditorOldBuffer();
