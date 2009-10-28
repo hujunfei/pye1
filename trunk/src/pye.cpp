@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 	phregn.AddFuzzyPinyinUnit("zh", "z");
 
 	while (ch = getchar()) {
+		length = 5;
 		if (isalpha(ch)) {
 			pyedit.InsertPinyinKey(ch);
 			pyedit.GetPagePhrase(&list, &length);
