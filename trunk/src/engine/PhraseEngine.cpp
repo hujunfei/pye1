@@ -40,7 +40,7 @@ EunitPhrase::~EunitPhrase()
  * 类构造函数.
  */
 PhraseEngine::PhraseEngine():eulist(NULL), crttable(NULL), fztable(NULL),
- pagesize(5), userpath(NULL), bakpath(NULL), timestamp(0)
+ userpath(NULL), bakpath(NULL), timestamp(0)
 {
 	ParseString parse;
 	int8_t count, sum;
@@ -278,15 +278,6 @@ GSList *PhraseEngine::InquirePhraseIndex(const CharsIndex *chidx, int chlen) con
 GPtrArray *PhraseEngine::GetCorrectTable() const
 {
 	return crttable;
-}
-
-/**
- * 获取页面大小.
- * @return 页面大小
- */
-uint8_t PhraseEngine::GetPageSize() const
-{
-	return pagesize;
 }
 
 /**

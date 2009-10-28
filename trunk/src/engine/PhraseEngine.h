@@ -65,7 +65,6 @@ public:
 	void FeedbackPhraseData(const PhraseData *phrdt) const;
 	GSList *InquirePhraseIndex(const CharsIndex *chidx, int chlen) const;
 	GPtrArray *GetCorrectTable() const;
-	uint8_t GetPageSize() const;
 private:
 	bool BreakMbfileString(char *lineptr, const char **mfile, const char **priority);
 	EngineUnit *CreateEngineUnit(const char *mfile, int priority, EUNIT_TYPE type);
@@ -73,7 +72,6 @@ private:
 	GSList *eulist;		///< 引擎链表
 	GPtrArray *crttable;	///< 拼音矫正表
 	int8_t *fztable;		///< 模糊拼音对照表
-	uint8_t pagesize;	///< 页面大小
 
 	char *userpath;	///< 用户码表路径
 	char *bakpath;		///< 备份码表路径

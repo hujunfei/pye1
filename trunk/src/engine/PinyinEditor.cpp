@@ -311,7 +311,7 @@ bool PinyinEditor::GetAuxiliaryText(gunichar2 **text, glong *len)
 /**
  * 获取一个页面的词语数据.
  * @retval list 词语链表
- * @retval len 词语链表长度
+ * @retval len 页面大小/词语链表长度
  * @return 执行状况
  */
 bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
@@ -322,12 +322,12 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 	uint8_t pagesize, count;
 
 	/* 初始化参数 */
+	pagesize = *len;
 	*list = NULL;
 	*len = 0;
 
 	/* 提取一页的词语数据 */
 	count = 0;
-	pagesize = phregn->GetPageSize();
 	while (count < pagesize) {
 		if (!(euphr = SearchPreferEunitPhrase()))
 			break;

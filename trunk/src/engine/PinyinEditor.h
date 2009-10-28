@@ -2,7 +2,7 @@
 // C++ Interface: PinyinEditor
 //
 // Description:
-//
+// 拼音编辑器，以词语引擎为核心，借助其功能完成拼音到词语数据的转换
 //
 // Author: Jally <jallyx@163.com>, (C) 2009
 //
