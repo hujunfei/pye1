@@ -311,7 +311,7 @@ bool PinyinEditor::GetAuxiliaryText(gunichar2 **text, glong *len)
 /**
  * 获取一个页面的词语数据.
  * @retval list 词语链表
- * @retval len 词语链表长度
+ * @retval len 页面大小/词语链表长度
  * @return 执行状况
  */
 bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
@@ -322,12 +322,12 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 	uint8_t pagesize, count;
 
 	/* 初始化参数 */
+	pagesize = *len;
 	*list = NULL;
 	*len = 0;
 
 	/* 提取一页的词语数据 */
 	count = 0;
-	pagesize = phregn->GetPageSize();
 	while (count < pagesize) {
 		if (!(euphr = SearchPreferEunitPhrase()))
 			break;
@@ -345,29 +345,6 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 	}
 
 	return (count != 0);
-}
-
-/**
- * 考察此词语是否已经存在词语数据缓冲区中.
- * @param phrdt 词语数据
- * @return 是否已经存在
- */
-bool PinyinEditor::IsExistCachePhrase(const PhraseData *phrdt)
-{
-	GSList *tlist;
-	PhraseData *tphrdt;
-
-	tlist = cclist;
-	while (tlist) {
-		tphrdt = (PhraseData *)tlist->data;
-		if (tphrdt->dtlen == phrdt->dtlen
-			 && memcmp(tphrdt->data, phrdt->data,
-				 sizeof(gunichar2) * tphrdt->dtlen) == 0)
-			break;
-		tlist = g_slist_next(tlist);
-	}
-
-	return tlist;
 }
 
 /**
@@ -609,6 +586,29 @@ EunitPhrase *PinyinEditor::SearchPreferEunitPhrase()
 	}
 
 	return euphr;
+}
+
+/**
+ * 考察此词语是否已经存在词语数据缓冲区中.
+ * @param phrdt 词语数据
+ * @return 是否已经存在
+ */
+bool PinyinEditor::IsExistCachePhrase(const PhraseData *phrdt)
+{
+	GSList *tlist;
+	PhraseData *tphrdt;
+
+	tlist = cclist;
+	while (tlist) {
+		tphrdt = (PhraseData *)tlist->data;
+		if (tphrdt->dtlen == phrdt->dtlen
+			 && memcmp(tphrdt->data, phrdt->data,
+				 sizeof(gunichar2) * tphrdt->dtlen) == 0)
+			break;
+		tlist = g_slist_next(tlist);
+	}
+
+	return tlist;
 }
 
 /**

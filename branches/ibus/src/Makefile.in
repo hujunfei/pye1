@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -32,9 +33,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = pye$(EXEEXT)
+bin_PROGRAMS = ibus-pye$(EXEEXT)
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -45,11 +47,12 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_pye_OBJECTS = pye.$(OBJEXT)
-pye_OBJECTS = $(am_pye_OBJECTS)
-pye_DEPENDENCIES = engine/libengine.a utils/libutils.a
-pye_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(pye_LDFLAGS) \
-	$(LDFLAGS) -o $@
+am_ibus_pye_OBJECTS = Config.$(OBJEXT) Engine.$(OBJEXT) \
+	PinyinEngine.$(OBJEXT) main.$(OBJEXT)
+ibus_pye_OBJECTS = $(am_ibus_pye_OBJECTS)
+ibus_pye_DEPENDENCIES = engine/libengine.a utils/libutils.a
+ibus_pye_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(ibus_pye_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -59,8 +62,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(pye_SOURCES)
-DIST_SOURCES = $(pye_SOURCES)
+SOURCES = $(ibus_pye_SOURCES)
+DIST_SOURCES = $(ibus_pye_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -68,6 +71,7 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
+HEADERS = $(noinst_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -125,6 +129,8 @@ ECHO_T = @ECHO_T@
 EXEEXT = @EXEEXT@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+IBUS_CFLAGS = @IBUS_CFLAGS@
+IBUS_LIBS = @IBUS_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -197,14 +203,15 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 METASOURCES = AUTO
-pye_SOURCES = pye.cpp
+ibus_pye_SOURCES = Config.cpp Engine.cpp PinyinEngine.cpp main.cpp
 
 # set the include path found by configure
-INCLUDES = $(all_includes) @PACKAGE_CFLAGS@
+INCLUDES = $(all_includes) @PACKAGE_CFLAGS@ -DPKGDATADIR=\"$(pkgdatadir)\"
 
 # the library search path.
-pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
-pye_LDADD = $(INTLLIBS) engine/libengine.a utils/libutils.a
+ibus_pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
+ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a utils/libutils.a
+noinst_HEADERS = Config.h Engine.h PinyinEngine.h
 SUBDIRS = include utils engine tools
 all: all-recursive
 
@@ -277,9 +284,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-pye$(EXEEXT): $(pye_OBJECTS) $(pye_DEPENDENCIES) 
-	@rm -f pye$(EXEEXT)
-	$(pye_LINK) $(pye_OBJECTS) $(pye_LDADD) $(LIBS)
+ibus-pye$(EXEEXT): $(ibus_pye_OBJECTS) $(ibus_pye_DEPENDENCIES) 
+	@rm -f ibus-pye$(EXEEXT)
+	$(ibus_pye_LINK) $(ibus_pye_OBJECTS) $(ibus_pye_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -287,7 +294,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pye.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Config.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Engine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PinyinEngine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -498,7 +508,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)"; do \

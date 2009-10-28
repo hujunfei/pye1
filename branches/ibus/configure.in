@@ -3,9 +3,9 @@
 
 AC_PREREQ(2.63)
 AC_INIT(configure.in)
-AC_CONFIG_SRCDIR(src/pye.cpp)
+AC_CONFIG_SRCDIR(src/main.cpp)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(pye, 0.1.0)
+AM_INIT_AUTOMAKE(ibus-pye, 0.1.0)
 
 # Checks for programs.
 AC_PROG_CXX
@@ -45,8 +45,10 @@ fi
 
 glib_modules="glib-2.0 >= 2.16.0"
 PKG_CHECK_MODULES(GLIB, [$glib_modules])
-PACKAGE_CFLAGS="${GLIB_CFLAGS}"
-PACKAGE_LIBS="${GLIB_LIBS}"
+ibus_modules="ibus-1.0 >= 1.0.0"
+PKG_CHECK_MODULES(IBUS, [$ibus_modules])
+PACKAGE_CFLAGS="${GLIB_CFLAGS} ${IBUS_CFLAGS}"
+PACKAGE_LIBS="${GLIB_LIBS} ${IBUS_LIBS}"
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 

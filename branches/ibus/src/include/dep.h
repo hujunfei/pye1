@@ -13,5 +13,6 @@
 #define __SRC_INCLUDE_DEP_H
 
 #include <glib.h>
+#include <ibus.h>
 
 #endif
