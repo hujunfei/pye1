@@ -26,6 +26,7 @@ public:
 	bool DeletePinyinKey();
 	bool BackspacePinyinKey();
 	bool RevokeSelectedPhrase();
+	bool GetRawText(char **text, guint *len);
 	bool GetCommitText(gunichar2 **text, glong *len);
 	bool GetPreeditText(gunichar2 **text, glong *len);
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);

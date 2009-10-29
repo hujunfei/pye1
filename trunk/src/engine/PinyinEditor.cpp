@@ -169,6 +169,20 @@ bool PinyinEditor::RevokeSelectedPhrase()
 }
 
 /**
+ * 获取原始串.
+ * @retval text 原始串
+ * @retval len 原始串长度
+ * @return 执行状况
+ */
+bool PinyinEditor::GetRawText(char **text, guint *len)
+{
+	*text = g_memdup(pytable->data, pytable->len + 1);
+	*len = pytable->len;
+
+	return true;
+}
+
+/**
  * 获取提交数据.
  * @retval text 词语数据
  * @retval len 词语数据有效长度
