@@ -176,8 +176,13 @@ bool PinyinEditor::RevokeSelectedPhrase()
  */
 bool PinyinEditor::GetRawText(char **text, guint *len)
 {
-	*text = (char *)g_memdup(pytable->data, pytable->len + 1);
-	*len = pytable->len;
+	if (pytable->len != 0) {
+		*text = (char *)g_memdup(pytable->data, pytable->len + 1);
+		*len = pytable->len;
+	} else {
+		*text = NULL;
+		*len = 0;
+	}
 
 	return true;
 }
