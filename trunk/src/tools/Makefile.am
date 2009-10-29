@@ -3,6 +3,8 @@ bin_PROGRAMS = pyeCreateMB
 
 pyeCreateMB_SOURCES = CreateMB.cpp pyeCreateMB.cpp
 
+AM_CXXFLAGS = -Wall
+
 # set the include path found by configure
 INCLUDES= $(all_includes) @PACKAGE_CFLAGS@
 

@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	phregn.CreateUserEngineUnit("user.mb");
 	phregn.AddFuzzyPinyinUnit("zh", "z");
 
-	while (ch = getchar()) {
+	while ( (ch = getchar())) {
 		length = 5;
 		if (isalpha(ch)) {
 			pyedit.InsertPinyinKey(ch);
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 			tlist = list;
 			while (tlist) {
 				phrdt = (PhraseData *)tlist->data;
-				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+				printf("%u.%s ", count, g_utf16_to_utf8(phrdt->data,
 						 phrdt->dtlen, NULL, NULL, NULL));
 				count++;
 				tlist = g_slist_next(tlist);
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 				tlist = list;
 				while (tlist) {
 					phrdt = (PhraseData *)tlist->data;
-					printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+					printf("%u.%s ", count, g_utf16_to_utf8(phrdt->data,
 					       phrdt->dtlen, NULL, NULL, NULL));
 					count++;
 					tlist = g_slist_next(tlist);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 			tlist = list;
 			while (tlist) {
 				phrdt = (PhraseData *)tlist->data;
-				printf("%ld.%s ", count, g_utf16_to_utf8(phrdt->data,
+				printf("%u.%s ", count, g_utf16_to_utf8(phrdt->data,
 						 phrdt->dtlen, NULL, NULL, NULL));
 				count++;
 				tlist = g_slist_next(tlist);

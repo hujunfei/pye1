@@ -3,6 +3,8 @@ bin_PROGRAMS = pye
 
 pye_SOURCES = pye.cpp
 
+AM_CXXFLAGS = -Wall
+
 # set the include path found by configure
 INCLUDES= $(all_includes) @PACKAGE_CFLAGS@
 

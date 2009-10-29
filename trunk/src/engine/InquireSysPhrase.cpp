@@ -105,7 +105,7 @@ GSList *InquireSysPhrase::SearchMatchPhrase(const CharsIndex *chidx, int len)
 			phridx1 = (PhraseIndex *)list1->data;
 			phridx2 = (PhraseIndex *)list2->data;
 			if (phridx1->chlen > phridx2->chlen
-				 || phridx1->chlen == phridx2->chlen && balance <= 0) {
+				 || (phridx1->chlen == phridx2->chlen && balance <= 0)) {
 				tlist = g_slist_concat(tlist, list1);
 				tlist = list1;
 				list1 = g_slist_remove_link(list1, list1);
@@ -291,7 +291,11 @@ PhraseIndex *InquireSysPhrase::SearchIndexPreferPhrase(int8_t index,
 	indexp = root.table + index;
 	if (indexp->indexs == 0)
 		return NULL;
-	preflenp = NULL;	// 预设已选中数值为空
+
+	/* 预设已选中数值为空 */
+	preflenp = NULL;
+	preflen = 0;
+	prefnum = 0;
 
 	/* 查询数据 */
 	length = 1;	//因为不可能存在长度为0的词语，所以长度预设为1
