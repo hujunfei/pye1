@@ -54,6 +54,8 @@ bool PinyinEditor::SyncData()
 {
 	phregn->SyncEngineUnitData(&euphrlist, timestamp);
 	time(&timestamp);	//更新时间戳
+
+	return true;
 }
 
 /**
@@ -66,10 +68,10 @@ bool PinyinEditor::MoveCursorPoint(int offset)
 	int tmp;
 
 	tmp = cursor + offset;
-	if (tmp > pytable->len)
-		cursor = pytable->len;
-	else if (tmp < 0)
+	if (tmp < 0)
 		cursor = 0;
+	else if ((guint)tmp > pytable->len)
+		cursor = pytable->len;
 	else
 		cursor = tmp;
 
@@ -162,6 +164,8 @@ bool PinyinEditor::RevokeSelectedPhrase()
 	ClearPinyinEditorTempBuffer();
 	/* 查询词语索引 */
 	InquirePhraseIndex();
+
+	return true;
 }
 
 /**
@@ -213,6 +217,7 @@ bool PinyinEditor::GetPreeditText(gunichar2 **text, glong *len)
 
 	/* 获取数据总长度 */
 	length = 0;
+	lastlist = NULL;
 	tlist = aclist;
 	while (tlist) {
 		length += ((PhraseData *)tlist->data)->dtlen;
@@ -268,6 +273,8 @@ bool PinyinEditor::GetAuxiliaryText(gunichar2 **text, glong *len)
 	/* 获取数据总长度 */
 	length = 0;
 	offset = 0;
+	size = 0;
+	pinyin = NULL;
 	tlist = aclist;
 	while (tlist) {
 		phrdt = (PhraseData *)tlist->data;
@@ -319,7 +326,7 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 	EunitPhrase *euphr;
 	PhraseIndex *phridx;
 	PhraseData *phrdt;
-	uint8_t pagesize, count;
+	guint pagesize, count;
 
 	/* 初始化参数 */
 	pagesize = *len;
@@ -376,7 +383,6 @@ bool PinyinEditor::SelectCachePhrase(PhraseData *phrdt)
  */
 bool PinyinEditor::FeedbackSelectedPhrase()
 {
-	GSList *tlist;
 	PhraseData *phrdt;
 	guint length;
 
@@ -575,8 +581,8 @@ EunitPhrase *PinyinEditor::SearchPreferEunitPhrase()
 		if (teuphr->phrlist) {
 			phridx = (PhraseIndex *)teuphr->phrlist->data;
 			if (phridx->chlen > chlen
-				 || phridx->chlen == chlen
-					 && teuphr->eunit->priority > priority) {
+				 || (phridx->chlen == chlen
+					 && teuphr->eunit->priority > priority)) {
 				euphr = teuphr;
 				chlen = phridx->chlen;
 				priority = teuphr->eunit->priority;
@@ -633,7 +639,8 @@ void PinyinEditor::ClearEngineUnitBuffer()
 void PinyinEditor::ClearPinyinEditorBuffer()
 {
 	/* 清空待查询拼音表数据 */
-	pytable = g_array_remove_range(pytable, 0, pytable->len);
+	if (pytable->len != 0)
+		pytable = g_array_remove_range(pytable, 0, pytable->len);
 	cursor = 0;
 	/* 释放汉字索引数组 */
 	delete [] chidx;

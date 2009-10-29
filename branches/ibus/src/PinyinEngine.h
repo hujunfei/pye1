@@ -18,7 +18,7 @@
 class PinyinEngine
 {
 public:
-	PinyinEngine(IBusEngine *engine);
+	PinyinEngine(IBusEngine *egn);
 	~PinyinEngine();
 
 	void EngineDisable();
@@ -33,11 +33,24 @@ public:
 	void CandidateClicked(guint index, guint button, guint state);
 	gboolean ProcessKeyEvent(guint keyval, guint keycode, guint state);
 private:
-	IBusEngine *busegn;	///< 引擎基类
-	PinyinEditor *pyedit;	///< 拼音编辑器
-	IBusLookupTable lktable;	///< 词语查询表
-	IBusPropList props;	///< 属性部件表
+	void ToggleModeChinese();
+	void ToggleModeFullLetter();
+	void ToggleModeFullPunct();
+	void ShowSetupDialog();
 
+	gboolean ProcessPinyin(guint keyval, guint keycode, guint state);
+	gboolean ProcessCapitalLetter(guint keyval, guint keycode, guint state);
+
+	void UpdateEngineUI();
+	void CommitPhrase();
+	void CommitWord(gunchar ch);
+
+	IBusEngine *engine;	///< 引擎基类
+	PinyinEditor *pyedit;	///< 拼音编辑器
+	IBusLookupTable *lktable;	///< 词语查询表
+	IBusPropList *props;	///< 属性部件表
+
+	guint prekey;		///< 前一个键值
 	bool chmode;		///< 汉语模式
 	bool flmode;		///< 字母全角模式
 	bool fpmode;		///< 标点全角模式

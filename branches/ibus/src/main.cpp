@@ -47,8 +47,6 @@ static void start_component()
 	IBusConnection *conn;
 	IBusBus *bus;
 
-	ibus_init ();
-
 	bus = ibus_bus_new();
 	g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnected_cb), NULL);
 
@@ -79,8 +77,6 @@ static void start_component()
 		ibus_component_add_engine(component, desc);
 		ibus_bus_register_component(bus, component);
 	}
-
-	ibus_main ();
 }
 
 int
@@ -89,13 +85,19 @@ main (gint argc, gchar **argv)
 	GError *error = NULL;
 	GOptionContext *context;
 
+	/* 参数分析 */
 	context = g_option_context_new("- ibus pinyin engine component");
 	g_option_context_add_main_entries(context, entries, "ibus-pinyin");
 	if (!g_option_context_parse(context, &argc, &argv, &error)) {
 		g_print("Option parsing failed: %s\n", error->message);
 		exit(1);
 	}
+	g_option_context_free(context);
 
-	start_component ();
+	/* 启动部件并运行程序 */
+	ibus_init();
+	start_component();
+	ibus_main();
+
 	return 0;
 }

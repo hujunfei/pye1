@@ -48,7 +48,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_ibus_pye_OBJECTS = Config.$(OBJEXT) Engine.$(OBJEXT) \
-	PinyinEngine.$(OBJEXT) main.$(OBJEXT)
+	HalfFullConverter.$(OBJEXT) PinyinEngine.$(OBJEXT) \
+	main.$(OBJEXT)
 ibus_pye_OBJECTS = $(am_ibus_pye_OBJECTS)
 ibus_pye_DEPENDENCIES = engine/libengine.a utils/libutils.a
 ibus_pye_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
@@ -203,15 +204,21 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 METASOURCES = AUTO
-ibus_pye_SOURCES = Config.cpp Engine.cpp PinyinEngine.cpp main.cpp
+ibus_pye_SOURCES = Config.cpp Engine.cpp HalfFullConverter.cpp PinyinEngine.cpp \
+	main.cpp
+AM_CXXFLAGS = -Wall
+
 
 # set the include path found by configure
-INCLUDES = $(all_includes) @PACKAGE_CFLAGS@ -DPKGDATADIR=\"$(pkgdatadir)\"
+INCLUDES = $(all_includes) @PACKAGE_CFLAGS@ \
+	-DPKGDATADIR=\"$(pkgdatadir)\" \
+	-DLIBEXECDIR=\"$(libexecdir)\"
+
 
 # the library search path.
 ibus_pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
 ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a utils/libutils.a
-noinst_HEADERS = Config.h Engine.h PinyinEngine.h
+noinst_HEADERS = Config.h Engine.h HalfFullConverter.h PinyinEngine.h
 SUBDIRS = include utils engine tools
 all: all-recursive
 
@@ -296,6 +303,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Engine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HalfFullConverter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PinyinEngine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
