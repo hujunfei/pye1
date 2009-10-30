@@ -79,8 +79,13 @@ static void start_component()
 	}
 }
 
-int
-main (gint argc, gchar **argv)
+static void init_phrase_engine()
+{
+	phregn.CreateSysEngineUnits("mb.txt");
+	phregn.CreateUserEngineUnit("user.mb");
+}
+
+int main(gint argc, gchar *argv[])
 {
 	GError *error = NULL;
 	GOptionContext *context;
@@ -97,6 +102,7 @@ main (gint argc, gchar **argv)
 	/* 启动部件并运行程序 */
 	ibus_init();
 	start_component();
+	init_phrase_engine();
 	ibus_main();
 
 	return 0;

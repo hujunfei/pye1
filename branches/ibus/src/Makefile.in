@@ -206,8 +206,8 @@ top_srcdir = @top_srcdir@
 METASOURCES = AUTO
 ibus_pye_SOURCES = Config.cpp Engine.cpp HalfFullConverter.cpp PinyinEngine.cpp \
 	main.cpp
-AM_CXXFLAGS = -Wall
 
+AM_CXXFLAGS = -Wall
 
 # set the include path found by configure
 INCLUDES = $(all_includes) @PACKAGE_CFLAGS@ \

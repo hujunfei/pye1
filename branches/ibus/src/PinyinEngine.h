@@ -21,6 +21,7 @@ public:
 	PinyinEngine(IBusEngine *egn);
 	~PinyinEngine();
 
+	void EngineReset();
 	void EngineDisable();
 	void EngineEnable();
 	void FocusIn();
@@ -33,6 +34,9 @@ public:
 	void CandidateClicked(guint index, guint button, guint state);
 	gboolean ProcessKeyEvent(guint keyval, guint keycode, guint state);
 private:
+	IBusPropList *CreateProperty();
+	void RestoreInitState();
+
 	void ToggleModeChinese();
 	void ToggleModeFullLetter();
 	void ToggleModeFullPunct();
@@ -40,10 +44,24 @@ private:
 
 	gboolean ProcessPinyin(guint keyval, guint keycode, guint state);
 	gboolean ProcessCapitalLetter(guint keyval, guint keycode, guint state);
+	gboolean ProcessNumber(guint keyval, guint keycode, guint state);
+	gboolean ProcessSpace(guint keyval, guint keycode, guint state);
+	gboolean ProcessPunct(guint keyval, guint keycode, guint state);
+	gboolean ProcessOthers(guint keyval, guint keycode, guint state);
 
 	void UpdateEngineUI();
+	void ShowEngineUI();
+	void HideEngineUI();
+	void ClearEngineUI();
+	void AppendPageCandidate();
+	void SelectCandidatePhrase(guint index);
 	void CommitPhrase();
-	void CommitWord(gunchar ch);
+	void CommitRawPhrase();
+	void CommitLetter(gunichar ch);
+	void CommitPunct(gunichar ch);
+	void CommitFinalChars(gunichar ch);
+	void CommitString(const gchar *str);
+	void CommitStaticString(const gchar *str);
 
 	IBusEngine *engine;	///< 引擎基类
 	PinyinEditor *pyedit;	///< 拼音编辑器
