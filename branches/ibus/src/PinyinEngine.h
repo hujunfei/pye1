@@ -68,6 +68,8 @@ private:
 	IBusLookupTable *lktable;	///< 词语查询表
 	IBusPropList *props;	///< 属性部件表
 
+	time_t timestamp;	///< 时间戳
+	time_t bakgap;		///< 备份时间间隔
 	guint prekey;		///< 前一个键值
 	bool chmode;		///< 汉语模式
 	bool flmode;		///< 字母全角模式

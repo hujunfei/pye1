@@ -59,6 +59,8 @@ PhraseEngine::PhraseEngine():eulist(NULL), crttable(NULL), fztable(NULL),
  */
 PhraseEngine::~PhraseEngine()
 {
+	/* 备份用户词语数据 */
+	BakUserEnginePhrase();
 	/* 释放引擎链表 */
 	for (GSList *tlist = eulist; tlist; tlist = g_slist_next(tlist))
 		delete (EngineUnit *)tlist->data;

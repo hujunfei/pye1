@@ -30,8 +30,9 @@ extern PhraseEngine phregn;
  * @param egn IBusEngine
  */
 PinyinEngine::PinyinEngine(IBusEngine *egn):engine(egn), pyedit(NULL),
- lktable(NULL), props(NULL), prekey(IBUS_VoidSymbol), chmode(true),
- flmode(false), fpmode(true), squote(false), dquote(false)
+ lktable(NULL), props(NULL), timestamp(0), bakgap(60),
+ prekey(IBUS_VoidSymbol), chmode(true), flmode(false), fpmode(true),
+ squote(false), dquote(false)
 {
 	/* 创建拼音编辑器 */
 	pyedit = new PinyinEditor(&phregn);
@@ -39,6 +40,9 @@ PinyinEngine::PinyinEngine(IBusEngine *egn):engine(egn), pyedit(NULL),
 	lktable = ibus_lookup_table_new(config.GetPageSize(), 0, TRUE, FALSE);
 	/* 创建属性部件表 */
 	props = CreateProperty();
+	/* 获取时间戳 */
+	time(&timestamp);
+	bakgap = config.GetBackupGap();
 }
 
 /**
@@ -65,6 +69,7 @@ void PinyinEngine::EngineReset()
 void PinyinEngine::EngineDisable()
 {
 	phregn.BakUserEnginePhrase();
+	time(&timestamp);
 	RestoreInitState();
 	ClearEngineUI();
 }
@@ -90,6 +95,7 @@ void PinyinEngine::FocusIn()
 void PinyinEngine::FocusOut()
 {
 	phregn.BakUserEnginePhrase();
+	time(&timestamp);
 }
 
 /**
@@ -184,9 +190,8 @@ gboolean PinyinEngine::ProcessKeyEvent(guint keyval, guint keycode, guint state)
 			if (pyedit->IsFinishInquirePhrase())
 				ToggleModeChinese();
 			return TRUE;
-		default:
-			return FALSE;
 		}
+		return FALSE;
 	}
 
 	/* 键值处理 */
@@ -222,7 +227,7 @@ gboolean PinyinEngine::ProcessKeyEvent(guint keyval, guint keycode, guint state)
 	}
 	prekey = retval ? IBUS_VoidSymbol : keyval;
 
-	return TRUE;
+	return retval;
 }
 
 /**
@@ -767,6 +772,7 @@ void PinyinEngine::SelectCandidatePhrase(guint index)
  */
 void PinyinEngine::CommitPhrase()
 {
+	time_t stamp;
 	IBusText *text;
 	char *textdt;
 	gunichar2 *data;
@@ -784,6 +790,13 @@ void PinyinEngine::CommitPhrase()
 		ibus_engine_commit_text(engine, text);
 		/* 反馈词语 */
 		pyedit->FeedbackSelectedPhrase();
+	}
+
+	/* 检查是否需要备份数据 */
+	time(&stamp);
+	if (stamp - timestamp > bakgap) {
+		phregn.BakUserEnginePhrase();
+		timestamp = stamp;
 	}
 }
 

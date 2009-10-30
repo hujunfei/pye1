@@ -28,3 +28,8 @@ guint Config::GetPageSize()
 {
 	return 5;
 }
+
+time_t Config::GetBackupGap()
+{
+	return 60;
+}

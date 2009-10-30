@@ -13,6 +13,7 @@
 #define __SRC_CONFIG_H
 
 #include "include/dep.h"
+#include "include/sys.h"
 
 class Config
 {
@@ -22,6 +23,7 @@ public:
 
 	void SetConnection(IBusConnection *conn);
 	guint GetPageSize();
+	time_t GetBackupGap();
 private:
 	IBusConnection *connection;
 };
