@@ -64,6 +64,7 @@ void PinyinEngine::EngineReset()
  */
 void PinyinEngine::EngineDisable()
 {
+	phregn.BakUserEnginePhrase();
 	RestoreInitState();
 	ClearEngineUI();
 }
@@ -88,6 +89,7 @@ void PinyinEngine::FocusIn()
  */
 void PinyinEngine::FocusOut()
 {
+	phregn.BakUserEnginePhrase();
 }
 
 /**
