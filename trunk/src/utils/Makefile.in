@@ -108,9 +108,11 @@ DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
+GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -185,6 +187,7 @@ top_srcdir = @top_srcdir@
 METASOURCES = AUTO
 lib_LIBRARIES = libutils.a
 libutils_a_SOURCES = support.cpp wrapper.cpp
+AM_CXXFLAGS = -Wall
 
 # set the include path found by configure
 INCLUDES = $(all_includes) @PACKAGE_CFLAGS@
