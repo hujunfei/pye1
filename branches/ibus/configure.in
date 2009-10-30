@@ -52,5 +52,6 @@ PACKAGE_LIBS="${GLIB_LIBS} ${IBUS_LIBS}"
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
-AC_OUTPUT(Makefile src/Makefile src/engine/Makefile src/include/Makefile \
-	src/tools/Makefile src/utils/Makefile)
+AC_OUTPUT(Makefile pixmaps/Makefile src/Makefile src/pye.xml.in \
+	src/engine/Makefile src/include/Makefile src/tools/Makefile \
+	src/utils/Makefile)

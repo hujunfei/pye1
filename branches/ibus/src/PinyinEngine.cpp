@@ -679,7 +679,7 @@ void PinyinEngine::UpdateEngineUI()
 		text = ibus_text_new_from_static_string(textdt);
 		g_object_set_data_full(G_OBJECT(text), "text", textdt,
 						 GDestroyNotify(g_free));
-		ibus_engine_update_preedit_text(engine, text, 0, TRUE);
+		ibus_engine_update_preedit_text(engine, text, length, TRUE);
 	} else
 		ibus_engine_hide_preedit_text(engine);
 }

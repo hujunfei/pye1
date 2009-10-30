@@ -59,10 +59,10 @@ static void start_component()
 		ibus_bus_request_name(bus, "org.freedesktop.IBus.Pye", 0);
 	} else {
 		component = ibus_component_new("org.freedesktop.IBus.Pye",
-					 "Pinyin input method",
-					 "0.1.0",
-					 "GPL",
-					 "Jally, pqiu",
+					 "Pinyin Component",
+					 VERSION,
+					 "GPL 2+",
+					 "Jally jallyx@163.com",
 					 "http://code.google.com/p/pye1/",
 					 NULL,
 					 NULL);
@@ -70,8 +70,8 @@ static void start_component()
 					 "Pinyin Engine",
 					 "Pinyin input method",
 					 "zh_CN",
-					 "GPL",
-					 "Jally, pqiu",
+					 "GPL 2+",
+					 "Jally jallyx@163.com",
 					 PKGDATADIR "/icons/ibus-pye.svg",
 					 "us");
 		ibus_component_add_engine(component, desc);
@@ -81,8 +81,19 @@ static void start_component()
 
 static void init_phrase_engine()
 {
-	phregn.CreateSysEngineUnits("mb.txt");
-	phregn.CreateUserEngineUnit("user.mb");
+	const gchar *env;
+	char path[1024];
+
+	phregn.CreateSysEngineUnits(PKGDATADIR "/data/config.txt");
+	env = g_get_home_dir();
+	snprintf(path, 1024, "%s/.ibus", env);
+	if (access(path, F_OK) != 0)
+		mkdir(path, 0777);
+	snprintf(path, 1024, "%s/.ibus/pye", env);
+	if (access(path, F_OK) != 0)
+		mkdir(path, 0777);
+	snprintf(path, 1024, "%s/.ibus/pye/user.mb", env);
+	phregn.CreateUserEngineUnit(path);
 }
 
 int main(gint argc, gchar *argv[])

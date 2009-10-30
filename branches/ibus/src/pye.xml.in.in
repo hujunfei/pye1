@@ -1,0 +1,26 @@
+<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<!-- filename: pye.xml -->
+<component>
+	<name>org.freedesktop.IBus.Pye</name>
+	<description>Pye Component</description>
+	<exec>${libexecdir}/ibus-pye --ibus</exec>
+	<version>@VERSION@</version>
+	<author>Jally &lt;jallyx@163.com&gt;</author>
+	<license>GPL 2+</license>
+	<homepage>http://code.google.com/p/pye1</homepage>
+
+	<engines>
+		<engine>
+			<name>pinyin</name>
+			<language>zh_CN</language>
+			<license>GPL 2+</license>
+			<author>Jally &lt;jallyx@163.com&gt;</author>
+			<icon>${pkgdatadir}/icons/ibus-pye.svg</icon>
+			<layout>us</layout>
+			<longname>Pinyin Engine</longname>
+			<description>Pinyin input method</description>
+			<rank>99</rank>
+		</engine>
+	</engines>
+
+</component>
