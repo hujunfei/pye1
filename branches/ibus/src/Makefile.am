@@ -19,10 +19,10 @@ noinst_HEADERS = Config.h Engine.h HalfFullConverter.h PinyinEngine.h
 
 SUBDIRS = include utils engine tools
 
-component_DATA = pye.xml
 componentdir = $(datadir)/ibus/component
-EXTRA_DIST = pye.xml.in
+component_DATA = pye.xml
 CLEANFILES = pye.xml
+EXTRA_DIST = pye.xml.in
 pye.xml: pye.xml.in
 	( \
 		libexecdir=${libexecdir}; \

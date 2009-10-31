@@ -246,10 +246,10 @@ ibus_pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
 ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a utils/libutils.a
 noinst_HEADERS = Config.h Engine.h HalfFullConverter.h PinyinEngine.h
 SUBDIRS = include utils engine tools
-component_DATA = pye.xml
 componentdir = $(datadir)/ibus/component
-EXTRA_DIST = pye.xml.in
+component_DATA = pye.xml
 CLEANFILES = pye.xml
+EXTRA_DIST = pye.xml.in
 all: all-recursive
 
 .SUFFIXES:
@@ -263,9 +263,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign src/Makefile
+	  $(AUTOMAKE) --gnu src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
