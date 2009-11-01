@@ -20,6 +20,7 @@
 
 /**
  * 拼音校正单元.
+ * 为什么不声明成类？考虑一下(PinyinEditor)的实现，你就应该会明白了！ \n
  */
 typedef struct {
 	const char *fstring;	///< 错误串

@@ -13,6 +13,47 @@
 #include "ParseString.h"
 
 /**
+ * 内置拼音修正表.
+ * 这张表能够起到什么作用？ \n
+ * e.g.:
+ * geren-->g'er'en，我相信你一定不希望得到这个结果吧！ \n
+ * 让我们调用这张表先对它做一次预处理！ \n
+ * geren-->'ge'ren-->'g'e'r'en，这个结果应该可以接受了！ \n
+ * \n
+ * 已知bug: \n
+ * zhongou-->zh'ong'ou，中欧(此为正确分解) \n
+ * zhongou-->zhon'gou-->zh'g'ou，???(本程序处理结果) \n
+ */
+RectifyUnit PinyinEditor::irtytable[] = {
+	{"ga", "\'ga", true},
+	{"ge", "\'ge", true},
+	{"gou", "\'gou", true},
+	{"gong", "\'gong", true},
+	{"gu", "\'gu", true},
+	{"na", "\'na", true},
+	{"ne", "\'ne", true},
+	{"ni", "\'ni", true},
+	{"nou", "\'nou", true},
+	{"nong", "\'nong", true},
+	{"nu", "\'nu", true},
+	{"nv", "\'nv", true},
+	{"ran", "\'ran", true},
+	{"rao", "\'rao", true},
+	{"re", "\'re", true},
+	{"ri", "\'ri", true},
+	{"rou", "\'rou", true},
+	{"rong", "\'rong", true},
+	{"ru", "\'ru", true},
+	{"aou", "a\'ou", true},
+	{"uou", "u\'ou", true},
+	{"iai", "i\'ai", true},
+	{"iei", "i\'ei", true},
+	{"uei", "u\'ei", true},
+	{"vei", "v\'ei", true},
+	{NULL, NULL, true}
+};
+
+/**
  * 类构造函数.
  */
 PinyinEditor::PinyinEditor(PhraseEngine *engine):pytable(NULL), cursor(0),
@@ -495,11 +536,15 @@ PhraseData *PinyinEditor::CreateUserPhrase()
 void PinyinEditor::CreateCharsIndex()
 {
 	ParseString parse;
-	char *pinyin;
+	GArray *rtftable;
+	char *string, *pinyin;
 
-	pinyin = CorrectPinyinString();
+	rtftable = phregn->GetRectifyTable();
+	string = RectifyPinyinString(pytable->data, rtftable);
+	pinyin = RectifyPinyinString(string, irtytable);
+	g_free(string);
 	parse.ParsePinyinString(pinyin, &chidx, &chlen);
-	g_free(pinyin);	//已经没有用处了
+	g_free(pinyin);
 }
 
 /**
@@ -533,48 +578,6 @@ int PinyinEditor::ComputeInquireOffset()
 	}
 
 	return offset;
-}
-
-/**
- * 纠正待查询拼音串中可能存在的错误.
- * @return 新拼音串
- */
-char *PinyinEditor::CorrectPinyinString()
-{
-	GArray *crttable;
-	GArray *cpytable;
-	guint length, count;
-	const char *ptr;
-	char *pinyin;
-
-	/* 获取拼音修正表 */
-	crttable = phregn->GetRectifyTable();
-	/* 创建足够的缓冲区 */
-	cpytable = g_array_sized_new(TRUE, FALSE, 1, pytable->len << 1);
-
-	/* 纠正拼音串 */
-	length = 0;
-	while (length < pytable->len) {
-		count = 0;
-		while (count < crttable->len) {
-			ptr = *((const char **)crttable->data + count);
-			if (memcmp(ptr, pytable->data + length, strlen(ptr)) == 0)
-				break;
-			count += 2;
-		}
-		if (count < crttable->len) {
-			length += strlen(ptr);
-			ptr = *((const char **)crttable->data + count + 1);
-			cpytable = g_array_append_vals(cpytable, ptr, strlen(ptr));
-		} else {
-			cpytable = g_array_append_vals(cpytable,
-					 pytable->data + length, 1);
-			length++;
-		}
-	}
-	pinyin = g_array_free(cpytable, FALSE);
-
-	return pinyin;
 }
 
 /**
@@ -634,6 +637,92 @@ bool PinyinEditor::IsExistCachePhrase(const PhraseData *phrdt)
 	}
 
 	return tlist;
+}
+
+/**
+ * 纠正拼音串中可能存在的错误.
+ * 使用(PhraseEngine)类提供的拼音修正表. \n
+ * @param string 原拼音串
+ * @param rtftable 拼音修正参考表
+ * @return 新拼音串
+ */
+char *PinyinEditor::RectifyPinyinString(const char *string, const GArray *rtftable)
+{
+	GArray *rpytable;
+	size_t count, length;
+	guint index;
+	const RectifyUnit *rtfunit;
+	char *pinyin;
+
+	/* 创建足够的缓冲区 */
+	length = strlen(string);
+	rpytable = g_array_sized_new(TRUE, FALSE, 1, length << 1);
+
+	/* 纠正拼音串 */
+	count = 0;
+	while (count < length) {
+		index = 0;
+		while (index < rtftable->len) {
+			rtfunit = &g_array_index(rtftable, RectifyUnit, index);
+			if (memcmp(rtfunit->fstring, string + count,
+					 strlen(rtfunit->fstring)) == 0)
+				break;
+			index++;
+		}
+		if (index < rtftable->len) {
+			rpytable = g_array_append_vals(rpytable, rtfunit->tstring,
+							 strlen(rtfunit->tstring));
+			count += strlen(rtfunit->fstring);
+		} else {
+			rpytable = g_array_append_vals(rpytable, string + count, 1);
+			count++;
+		}
+	}
+	pinyin = g_array_free(rpytable, FALSE);
+
+	return pinyin;
+}
+
+/**
+ * 纠正拼音串中可能存在的错误.
+ * 使用本类内置的拼音修正表. \n
+ * @param string 原拼音串
+ * @param rtftable 拼音修正参考表
+ * @return 新拼音串
+ */
+char *PinyinEditor::RectifyPinyinString(const char *string, const RectifyUnit *rtftable)
+{
+	GArray *rpytable;
+	size_t count, length;
+	const RectifyUnit *rtfunit;
+	char *pinyin;
+
+	/* 创建足够的缓冲区 */
+	length = strlen(string);
+	rpytable = g_array_sized_new(TRUE, FALSE, 1, length << 1);
+
+	/* 纠正拼音串 */
+	count = 0;
+	while (count < length) {
+		rtfunit = rtftable;
+		while (rtfunit->fstring) {
+			if (memcmp(rtfunit->fstring, string + count,
+					 strlen(rtfunit->fstring)) == 0)
+				break;
+			rtfunit++;
+		}
+		if (rtfunit->fstring) {
+			rpytable = g_array_append_vals(rpytable, rtfunit->tstring,
+							 strlen(rtfunit->tstring));
+			count += strlen(rtfunit->fstring);
+		} else {
+			rpytable = g_array_append_vals(rpytable, string + count, 1);
+			count++;
+		}
+	}
+	pinyin = g_array_free(rpytable, FALSE);
+
+	return pinyin;
 }
 
 /**

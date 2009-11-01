@@ -40,9 +40,10 @@ private:
 	void CreateCharsIndex();
 	void InquirePhraseIndex();
 	int ComputeInquireOffset();
-	char *CorrectPinyinString();
 	EunitPhrase *SearchPreferEunitPhrase();
 	bool IsExistCachePhrase(const PhraseData *phrdt);
+	char *RectifyPinyinString(const char *string, const GArray *rtftable);
+	char *RectifyPinyinString(const char *string, const RectifyUnit *rtftable);
 	void ClearEngineUnitBuffer();
 	void ClearPinyinEditorBuffer();
 	void ClearPinyinEditorOldBuffer();
@@ -58,6 +59,8 @@ private:
 	const PhraseEngine *phregn;	///< 词语引擎
 	GSList *euphrlist;	///< 引擎词语索引缓冲点链表
 	time_t timestamp;	///< 引擎缓冲数据的时间戳
+
+	static RectifyUnit irtytable[];	///< 内置拼音修正表
 };
 
 #endif

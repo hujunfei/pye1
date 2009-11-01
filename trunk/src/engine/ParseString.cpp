@@ -15,6 +15,8 @@
 
 /**
  * 拼音单元数组.
+ * @note 为了保证拼音分析函数能够尽量输出正确的结果，
+ * 你不应该随意调整本数组元素之间的顺序. \n
  */
 PinyinUnit ParseString::pyunits[] = {
 	{"iang", MINOR_TYPE},		///< 0x00 0
