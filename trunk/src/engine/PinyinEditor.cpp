@@ -88,6 +88,15 @@ PinyinEditor::~PinyinEditor()
 }
 
 /**
+ * 拼音编辑器是否为空.
+ * @return 是否为空
+ */
+bool PinyinEditor::IsEmpty()
+{
+	return (pytable->len == 0);
+}
+
+/**
  * 同步数据.
  * @return 执行状况
  */

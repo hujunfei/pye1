@@ -20,6 +20,7 @@ public:
 	PinyinEditor(PhraseEngine *engine);
 	~PinyinEditor();
 
+	bool IsEmpty();
 	bool SyncData();
 	bool MoveCursorPoint(int offset);
 	bool InsertPinyinKey(char ch);
