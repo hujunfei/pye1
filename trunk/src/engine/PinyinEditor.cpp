@@ -541,14 +541,14 @@ int PinyinEditor::ComputeInquireOffset()
  */
 char *PinyinEditor::CorrectPinyinString()
 {
-	GPtrArray *crttable;
+	GArray *crttable;
 	GArray *cpytable;
 	guint length, count;
 	const char *ptr;
 	char *pinyin;
 
 	/* 获取拼音修正表 */
-	crttable = phregn->GetCorrectTable();
+	crttable = phregn->GetRectifyTable();
 	/* 创建足够的缓冲区 */
 	cpytable = g_array_sized_new(TRUE, FALSE, 1, pytable->len << 1);
 
@@ -557,14 +557,14 @@ char *PinyinEditor::CorrectPinyinString()
 	while (length < pytable->len) {
 		count = 0;
 		while (count < crttable->len) {
-			ptr = *((const char **)crttable->pdata + count);
+			ptr = *((const char **)crttable->data + count);
 			if (memcmp(ptr, pytable->data + length, strlen(ptr)) == 0)
 				break;
 			count += 2;
 		}
 		if (count < crttable->len) {
 			length += strlen(ptr);
-			ptr = *((const char **)crttable->pdata + count + 1);
+			ptr = *((const char **)crttable->data + count + 1);
 			cpytable = g_array_append_vals(cpytable, ptr, strlen(ptr));
 		} else {
 			cpytable = g_array_append_vals(cpytable,

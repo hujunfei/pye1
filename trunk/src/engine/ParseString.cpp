@@ -16,7 +16,7 @@
 /**
  * 拼音单元数组.
  */
-PinyinUnit pyunits[] = {
+PinyinUnit ParseString::pyunits[] = {
 	{"iang", MINOR_TYPE},		///< 0x00 0
 	{"iong", MINOR_TYPE},		///< 0x01 1
 	{"uang", MINOR_TYPE},	///< 0x02 2
