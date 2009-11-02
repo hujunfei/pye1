@@ -22,7 +22,7 @@ public:
 
 	bool IsEmpty();
 	bool SyncData();
-	bool SetEditorMode(bool cn);
+	bool SetEditorMode(bool zh);
 	bool MoveCursorPoint(int offset);
 	bool InsertPinyinKey(char ch);
 	bool DeletePinyinKey();

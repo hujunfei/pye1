@@ -112,14 +112,14 @@ bool PinyinEditor::SyncData()
 /**
  * 设置编辑器的当前模式.
  * 主要用于避免在英文输入模式下，编辑器依然会查询词语。 \n
- * @param cn 模式;true 中文,false 英文
+ * @param zh 模式;true 中文,false 英文
  * @return 执行状况
  */
-bool PinyinEditor::SetEditorMode(bool cn)
+bool PinyinEditor::SetEditorMode(bool zh)
 {
 	if (pytable->len > 0)
 		return false;
-	editmode = cn;
+	editmode = zh;
 	return true;
 }
 
