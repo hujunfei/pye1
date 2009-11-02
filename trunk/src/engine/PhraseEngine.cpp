@@ -244,6 +244,10 @@ void PhraseEngine::FeedbackPhraseData(const PhraseData *phrdt) const
 	GSList *tlist;
 	EngineUnit *eu;
 
+	/* 如果此词汇无效则直接退出即可 */
+	if (phrdt->offset == 0)
+		return;
+
 	/* 查询用户词语引擎单元 */
 	tlist = eulist;
 	while (tlist) {

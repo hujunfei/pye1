@@ -71,9 +71,10 @@ AR = ar
 ARFLAGS = cru
 libengine_a_AR = $(AR) $(ARFLAGS)
 libengine_a_LIBADD =
-am_libengine_a_OBJECTS = InquireSysPhrase.$(OBJEXT) \
-	InquireUserPhrase.$(OBJEXT) ParseString.$(OBJEXT) \
-	PhraseEngine.$(OBJEXT) PinyinEditor.$(OBJEXT)
+am_libengine_a_OBJECTS = DynamicPhrase.$(OBJEXT) \
+	InquireSysPhrase.$(OBJEXT) InquireUserPhrase.$(OBJEXT) \
+	ParseString.$(OBJEXT) PhraseEngine.$(OBJEXT) \
+	PinyinEditor.$(OBJEXT)
 libengine_a_OBJECTS = $(am_libengine_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -188,15 +189,15 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 METASOURCES = AUTO
 lib_LIBRARIES = libengine.a
-libengine_a_SOURCES = InquireSysPhrase.cpp InquireUserPhrase.cpp \
-	ParseString.cpp PhraseEngine.cpp PinyinEditor.cpp
+libengine_a_SOURCES = DynamicPhrase.cpp InquireSysPhrase.cpp \
+	InquireUserPhrase.cpp ParseString.cpp PhraseEngine.cpp PinyinEditor.cpp
 
 AM_CXXFLAGS = -Wall
 
 # set the include path found by configure
 INCLUDES = $(all_includes) @PACKAGE_CFLAGS@
-noinst_HEADERS = InquireSysPhrase.h InquireUserPhrase.h ParseString.h \
-	PhraseEngine.h PinyinEditor.h mess.h
+noinst_HEADERS = DynamicPhrase.h InquireSysPhrase.h InquireUserPhrase.h \
+	ParseString.h PhraseEngine.h PinyinEditor.h mess.h
 
 all: all-am
 
@@ -275,6 +276,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicPhrase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InquireSysPhrase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InquireUserPhrase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ParseString.Po@am__quote@

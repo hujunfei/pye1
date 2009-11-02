@@ -10,6 +10,7 @@
 //
 //
 #include "PinyinEditor.h"
+#include "DynamicPhrase.h"
 #include "ParseString.h"
 
 /**
@@ -406,19 +407,26 @@ bool PinyinEditor::GetAuxiliaryText(gunichar2 **text, glong *len)
  */
 bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 {
+	DynamicPhrase dyphr;
 	EunitPhrase *euphr;
 	PhraseIndex *phridx;
 	PhraseData *phrdt;
-	guint pagesize, count;
+	guint pagesize;
 
 	/* 初始化参数 */
 	pagesize = *len;
 	*list = NULL;
 	*len = 0;
 
+	/* 如果是第一次获取，则先尝试获取动态词语 */
+	if (!aclist && !cclist) {
+		*list = dyphr.GetDynamicPhrase(pytable->data, len);
+		for (GSList *tlist = *list; tlist; tlist = g_slist_next(tlist))
+			cclist = g_slist_prepend(cclist, tlist->data);	//减少时间开支
+	}
+
 	/* 提取一页的词语数据 */
-	count = 0;
-	while (count < pagesize) {
+	while (*len < pagesize) {
 		if (!(euphr = SearchPreferEunitPhrase()))
 			break;
 		phridx = (PhraseIndex *)euphr->phrlist->data;
@@ -429,12 +437,11 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 			*list = g_slist_append(*list, phrdt);
 			cclist = g_slist_prepend(cclist, phrdt);	//减少时间开支
 			(*len)++;
-			count++;
 		} else
 			delete phrdt;
 	}
 
-	return (count != 0);
+	return (*list);
 }
 
 /**
