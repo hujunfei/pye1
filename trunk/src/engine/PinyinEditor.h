@@ -22,6 +22,7 @@ public:
 
 	bool IsEmpty();
 	bool SyncData();
+	bool SetEditorMode(bool cn);
 	bool MoveCursorPoint(int offset);
 	bool InsertPinyinKey(char ch);
 	bool DeletePinyinKey();
@@ -50,6 +51,7 @@ private:
 	void ClearPinyinEditorOldBuffer();
 	void ClearPinyinEditorTempBuffer();
 
+	bool editmode;		///< 当前编辑模式;true 中文,false 英文
 	GArray *pytable;	///< 待查询拼音表
 	guint cursor;		///< 光标位置
 	CharsIndex *chidx;	///< 汉字索引数组

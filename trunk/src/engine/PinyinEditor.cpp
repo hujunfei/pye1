@@ -56,8 +56,8 @@ RectifyUnit PinyinEditor::irtytable[] = {
 /**
  * 类构造函数.
  */
-PinyinEditor::PinyinEditor(PhraseEngine *engine):pytable(NULL), cursor(0),
- chidx(NULL), chlen(0), aclist(NULL), cclist(NULL), phregn(engine),
+PinyinEditor::PinyinEditor(PhraseEngine *engine):editmode(true), pytable(NULL),
+ cursor(0), chidx(NULL), chlen(0), aclist(NULL), cclist(NULL), phregn(engine),
  euphrlist(NULL), timestamp(0)
 {
 	/* 待查询拼音表 */
@@ -105,6 +105,20 @@ bool PinyinEditor::SyncData()
 	phregn->SyncEngineUnitData(&euphrlist, timestamp);
 	time(&timestamp);	//更新时间戳
 
+	return true;
+}
+
+/**
+ * 设置编辑器的当前模式.
+ * 主要用于避免在英文输入模式下，编辑器依然会查询词语。 \n
+ * @param cn 模式;true 中文,false 英文
+ * @return 执行状况
+ */
+bool PinyinEditor::SetEditorMode(bool cn)
+{
+	if (pytable->len > 0)
+		return false;
+	editmode = cn;
 	return true;
 }
 
@@ -548,6 +562,11 @@ void PinyinEditor::CreateCharsIndex()
 	GArray *rtftable;
 	char *string, *pinyin;
 
+	/* 如果处于英文模式，则直接退出 */
+	if (!editmode)
+		return;
+
+	/* 创建汉字索引 */
 	rtftable = phregn->GetRectifyTable();
 	string = RectifyPinyinString(pytable->data, rtftable);
 	pinyin = RectifyPinyinString(string, irtytable);
@@ -563,6 +582,11 @@ void PinyinEditor::InquirePhraseIndex()
 {
 	int offset;
 
+	/* 如果处于英文模式，则直接退出 */
+	if (!editmode)
+		return;
+
+	/* 查询词语索引 */
 	offset = ComputeInquireOffset();
 	euphrlist = phregn->InquirePhraseIndex(chidx + offset, chlen - offset);
 	time(&timestamp);	//更新时间戳
