@@ -236,6 +236,34 @@ void PhraseEngine::SyncEngineUnitData(GSList **euphrlist, time_t stamp) const
 }
 
 /**
+ * 删除词语数据.
+ * @param phrdt 词语数据
+ */
+void PhraseEngine::DeletePhraseData(const PhraseData *phrdt) const
+{
+	GSList *tlist;
+	EngineUnit *eu;
+
+	/* 如果此词汇无效或为系统词汇则直接退出即可 */
+	if (phrdt->offset == 0 || phrdt->offset == (off_t)(-1))
+		return;
+
+	/* 查询用户词语引擎单元 */
+	tlist = eulist;
+	while (tlist) {
+		eu = (EngineUnit *)tlist->data;
+		if (eu->type == USER_TYPE)
+			break;
+		tlist = g_slist_next(tlist);
+	}
+	if (!tlist)
+		return;
+
+	/* 删除词语 */
+	((InquireUserPhrase *)eu->inqphr)->DeletePhraseFromTree(phrdt);
+}
+
+/**
  * 反馈词语数据.
  * @param phrdt 词语数据
  */

@@ -178,18 +178,31 @@ void PinyinEngine::CandidateClicked(guint index, guint button, guint state)
  */
 gboolean PinyinEngine::ProcessKeyEvent(guint keyval, guint keycode, guint state)
 {
+	guint pages;
 	gboolean retval;
 
-	/* 对释放键的处理 */
+	/* 对释放键(Shift)的处理 */
 	if (state & IBUS_RELEASE_MASK) {
+		if (CMSHM_FILTER(state) != 0 || prekey != keyval)
+			return FALSE;
 		switch (keyval) {
 		case IBUS_Shift_L:
-		case IBUS_Shift_R:
-			if (prekey == keyval && pyedit->IsEmpty())
+			if (!pyedit->IsEmpty()) {
+				pages = lktable->cursor_pos / lktable->page_size;
+				SelectCandidatePhrase(pages * lktable->page_size + 1);
+			} else
 				ToggleModeChinese();
 			return TRUE;
+		case IBUS_Shift_R:
+			if (!pyedit->IsEmpty()) {
+				pages = lktable->cursor_pos / lktable->page_size;
+				SelectCandidatePhrase(pages * lktable->page_size + 2);
+			} else
+				ToggleModeChinese();
+			return TRUE;
+		default:
+			return FALSE;
 		}
-		return FALSE;
 	}
 
 	/* 键值处理 */
@@ -466,6 +479,32 @@ gboolean PinyinEngine::ProcessNumber(guint keyval, guint keycode, guint state)
 {
 	guint pages, index;
 
+	/* 考察是否为(Ctrl + 数字)模式 */
+	if ((state & IBUS_CONTROL_MASK) != 0 && (state & ~IBUS_CONTROL_MASK) == 0
+							 && !pyedit->IsEmpty()) {
+		switch (keyval) {
+		case IBUS_0:
+		case IBUS_KP_0:
+			index = 9;
+			break;
+		case IBUS_1 ... IBUS_9:
+			index = keyval - IBUS_1;
+			break;
+		case IBUS_KP_1 ... IBUS_KP_9:
+			index = keyval - IBUS_KP_1;
+			break;
+		default:
+			g_assert_not_reached();
+		}
+		if (index >= lktable->page_size)
+			return TRUE;
+		pages = lktable->cursor_pos / lktable->page_size;
+		index += pages * lktable->page_size;
+		if (index >= lktable->candidates->len)
+			return TRUE;
+		DeleteCandidatePhrase(index);
+		return TRUE;
+	}
 	/* 如果有修饰键则不处理 */
 	if (CMSHM_FILTER(state) != 0)
 		return FALSE;
@@ -492,6 +531,8 @@ gboolean PinyinEngine::ProcessNumber(guint keyval, guint keycode, guint state)
 		case IBUS_KP_0 ... IBUS_KP_9:
 			CommitLetter('0' + keyval - IBUS_KP_0);
 			break;
+		default:
+			g_assert_not_reached();
 		}
 		return TRUE;
 	}
@@ -513,9 +554,13 @@ gboolean PinyinEngine::ProcessNumber(guint keyval, guint keycode, guint state)
 	}
 
 	/* 选择词语 */
-	//TODO 检查是否有效
+	if (index >= lktable->page_size)
+		return TRUE;
 	pages = lktable->cursor_pos / lktable->page_size;
-	SelectCandidatePhrase(pages * lktable->page_size + index);
+	index += pages * lktable->page_size;
+	if (index >= lktable->candidates->len)
+		return TRUE;
+	SelectCandidatePhrase(index);
 
 	return TRUE;
 }
@@ -529,6 +574,11 @@ gboolean PinyinEngine::ProcessNumber(guint keyval, guint keycode, guint state)
  */
 gboolean PinyinEngine::ProcessSpace(guint keyval, guint keycode, guint state)
 {
+	/* 考察是否为(Shift + Space)模式 */
+	if ((state & IBUS_SHIFT_MASK) != 0 && (state & ~IBUS_SHIFT_MASK) == 0) {
+		ToggleModeFullLetter();
+		return TRUE;
+	}
 	/* 如果有修饰键则不处理 */
 	if (CMSHM_FILTER(state) != 0)
 		return FALSE;
@@ -560,6 +610,11 @@ gboolean PinyinEngine::ProcessSpace(guint keyval, guint keycode, guint state)
 
 gboolean PinyinEngine::ProcessPunct(guint keyval, guint keycode, guint state)
 {
+	/* 考察是否为(Ctrl + .)模式 */
+	if ((state & IBUS_CONTROL_MASK) != 0 && (state & ~IBUS_CONTROL_MASK) == 0) {
+		ToggleModeFullPunct();
+		return TRUE;
+	}
 	/* 如果有修饰键则不处理 */
 	if (CMSHM_FILTER(state) != 0)
 		return FALSE;
@@ -657,30 +712,21 @@ gboolean PinyinEngine::ProcessPunct(guint keyval, guint keycode, guint state)
  */
 gboolean PinyinEngine::ProcessOthers(guint keyval, guint keycode, guint state)
 {
-	guint pages;
+	/* 如果有修饰键则不处理 */
+	if (CMSHM_FILTER(state) != 0)
+		return FALSE;
 
 	/* 编辑器为空 */
 	if (pyedit->IsEmpty())
 		return FALSE;
 
-	/* ignore numlock */
-	state &= ~IBUS_MOD2_MASK;
-
 	/* process some cursor control keys */
 	switch (keyval) {
-	case IBUS_Shift_L:
-		pages = lktable->cursor_pos / lktable->page_size;
-		SelectCandidatePhrase(pages * lktable->page_size + 1);
-		break;
-	case IBUS_Shift_R:
-		pages = lktable->cursor_pos / lktable->page_size;
-		SelectCandidatePhrase(pages * lktable->page_size + 2);
-		break;
 	case IBUS_Return:
 	case IBUS_KP_Enter:
 		CommitRawPhrase();
 		ClearEngineUI();
-		break;
+		return TRUE;
 	case IBUS_BackSpace:
 		if (!pyedit->RevokeSelectedPhrase())
 			pyedit->BackspacePinyinKey();
@@ -688,29 +734,29 @@ gboolean PinyinEngine::ProcessOthers(guint keyval, guint keycode, guint state)
 			UpdateEngineUI();
 		else
 			ClearEngineUI();
-		break;
+		return TRUE;
 	case IBUS_Up:
 	case IBUS_KP_Up:
 		CursorUp();
-		break;
+		return TRUE;
 	case IBUS_Down:
 	case IBUS_KP_Down:
 		CursorDown();
-		break;
+		return TRUE;
 	case IBUS_Page_Up:
 	case IBUS_KP_Page_Up:
 		PageUp();
-		break;
+		return TRUE;
 	case IBUS_Page_Down:
 	case IBUS_KP_Page_Down:
 		PageDown();
-		break;
+		return TRUE;
 	case IBUS_Escape:
 		EngineReset();
-		break;
+		return TRUE;
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -856,6 +902,10 @@ void PinyinEngine::AppendPageCandidate()
 		phrdt = (PhraseData *)tlist->data;
 		textdt = g_utf16_to_utf8(phrdt->data, phrdt->dtlen, NULL, NULL, NULL);
 		text = ibus_text_new_from_static_string(textdt);
+		if (phrdt->offset != 0 && phrdt->offset != (off_t)(-1)) {
+			ibus_text_append_attribute(text, IBUS_ATTR_TYPE_FOREGROUND, 0xff,
+									 0, phrdt->dtlen);
+		}
 		g_object_set_data_full(G_OBJECT(text), "text", textdt,
 						 GDestroyNotify(g_free));
 		g_object_set_data(G_OBJECT(text), "data", phrdt);
@@ -875,15 +925,69 @@ void PinyinEngine::SelectCandidatePhrase(guint index)
 	IBusText *text;
 	PhraseData *phrdt;
 
-	if ( (text = ibus_lookup_table_get_candidate(lktable, index))) {
-		phrdt = (PhraseData *)g_object_get_data(G_OBJECT(text), "data");
-		pyedit->SelectCachePhrase(phrdt);
-		if (pyedit->IsFinishInquirePhrase()) {
-			CommitPhrase();
-			ClearEngineUI();
-		} else
-			UpdateEngineUI();
-	}
+	if (!(text = ibus_lookup_table_get_candidate(lktable, index)))
+		return;
+	phrdt = (PhraseData *)g_object_get_data(G_OBJECT(text), "data");
+	pyedit->SelectCachePhrase(phrdt);
+	if (pyedit->IsFinishInquirePhrase()) {
+		CommitPhrase();
+		ClearEngineUI();
+	} else
+		UpdateEngineUI();
+}
+
+/**
+ * 删除候选词语.
+ * @param index 索引值
+ */
+void PinyinEngine::DeleteCandidatePhrase(guint index)
+{
+	IBusText *text;
+	PhraseData *phrdt;
+	char *textdt;
+	gunichar2 *data;
+	glong length;
+
+	if (!(text = ibus_lookup_table_get_candidate(lktable, index)))
+		return;
+
+	/* 删除词语并更新词语查询表 */
+	phrdt = (PhraseData *)g_object_get_data(G_OBJECT(text), "data");
+	if (phrdt->offset == 0 || phrdt->offset == (off_t)(-1))
+		return;
+	g_array_remove_index(lktable->candidates, index);
+	g_object_unref(text);
+	pyedit->DeletePhraseData(phrdt);
+	AppendPageCandidate();
+	ibus_engine_update_lookup_table_fast(engine, lktable, TRUE);
+	if (index != 0)
+		return;
+
+	/* 更新辅助文本 */
+	pyedit->GetAuxiliaryText(&data, &length);
+	if (length != 0) {
+		textdt = g_utf16_to_utf8(data, length, NULL, NULL, NULL);
+		g_free(data);
+		text = ibus_text_new_from_static_string(textdt);
+		g_object_set_data_full(G_OBJECT(text), "text", textdt,
+				       GDestroyNotify(g_free));
+		ibus_engine_update_auxiliary_text(engine, text, TRUE);
+		g_object_unref(text);
+	} else
+		ibus_engine_hide_auxiliary_text(engine);
+
+	/* 更新预编辑文本 */
+	pyedit->GetPreeditText(&data, &length);
+	if (length != 0) {
+		textdt = g_utf16_to_utf8(data, length, NULL, NULL, NULL);
+		g_free(data);
+		text = ibus_text_new_from_static_string(textdt);
+		g_object_set_data_full(G_OBJECT(text), "text", textdt,
+				       GDestroyNotify(g_free));
+		ibus_engine_update_preedit_text(engine, text, length, TRUE);
+		g_object_unref(text);
+	} else
+		ibus_engine_hide_preedit_text(engine);
 }
 
 /**

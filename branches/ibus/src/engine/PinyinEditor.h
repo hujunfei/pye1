@@ -35,6 +35,7 @@ public:
 	bool GetPagePhrase(GSList **list, guint *len);
 	bool GetDynamicPhrase(GSList **list, guint *len);
 	bool SelectCachePhrase(PhraseData *phrdt);
+	bool DeletePhraseData(PhraseData *phrdt);
 	bool FeedbackSelectedPhrase();
 	bool IsFinishInquirePhrase();
 	bool FinishInquirePhrase();

@@ -56,6 +56,7 @@ private:
 	void AppendDynamicPhrase();
 	void AppendPageCandidate();
 	void SelectCandidatePhrase(guint index);
+	void DeleteCandidatePhrase(guint index);
 	void CommitPhrase();
 	void CommitRawPhrase();
 	void CommitLetter(gunichar ch);

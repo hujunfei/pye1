@@ -469,18 +469,29 @@ bool PinyinEditor::GetDynamicPhrase(GSList **list, guint *len)
  */
 bool PinyinEditor::SelectCachePhrase(PhraseData *phrdt)
 {
-	GSList *tlist;
-
 	/* 将词语数据加入已接受词语链表 */
 	aclist = g_slist_append(aclist, phrdt);
 	/* 清空缓冲数据 */
-	if ( (tlist = g_slist_find(cclist, phrdt)))
-		tlist->data = NULL;	//避免二次释放
+	cclist = g_slist_remove(cclist, phrdt);	//避免二次释放
 	ClearEngineUnitBuffer();
 	ClearPinyinEditorTempBuffer();
 	/* 如果需要则继续查询词语 */
 	if (!IsFinishInquirePhrase())
 		InquirePhraseIndex();
+
+	return true;
+}
+
+/**
+ * 删除词语数据.
+ * @param phrdt 词语数据
+ * @return 执行状况
+ */
+bool PinyinEditor::DeletePhraseData(PhraseData *phrdt)
+{
+	phregn->DeletePhraseData(phrdt);
+	cclist = g_slist_remove(cclist, phrdt);
+	delete phrdt;
 
 	return true;
 }
