@@ -98,11 +98,12 @@ GSList *InquireUserPhrase::SearchMatchPhrase(const CharsIndex *chidx, int len)
 	GSList head = {NULL, NULL};
 	GSList *list1, *list2, *tlist;
 	PhraseIndex *phridx1, *phridx2;
+	int8_t index;
 
 	/* 对实际索引和模糊索引下的数据分别进行查询 */
 	list1 = SearchIndexMatchPhrase(chidx->major, chidx, len);
-	list2 = SearchIndexMatchPhrase(fztable ? *(fztable + chidx->major) : -1,
-								 chidx, len);
+	index = fztable ? *(fztable + chidx->major) : -1;
+	list2 = SearchIndexMatchPhrase(index, chidx, len);
 
 	/* 合并数据 */
 	tlist = &head;
@@ -142,11 +143,12 @@ GSList *InquireUserPhrase::SearchMatchPhrase(const CharsIndex *chidx, int len)
 PhraseIndex *InquireUserPhrase::SearchPreferPhrase(const CharsIndex *chidx, int len)
 {
 	PhraseIndex *phridx;
+	int8_t index;
 
 	if ( (phridx = SearchIndexPreferPhrase(chidx->major, chidx, len)))
 		return phridx;
-	phridx = SearchIndexPreferPhrase(fztable ? *(fztable + chidx->major) : -1,
-									 chidx, len);
+	index = fztable ? *(fztable + chidx->major) : -1;
+	phridx = SearchIndexPreferPhrase(index, chidx, len);
 
 	return phridx;
 }
@@ -522,11 +524,11 @@ GSList *InquireUserPhrase::SearchIndexMatchPhrase(int8_t index,
 PhraseIndex *InquireUserPhrase::SearchIndexPreferPhrase(int8_t index,
 					 const CharsIndex *chidx, int len)
 {
-	UserCharsLengthPoint *lengthp, *preflenp;
+	UserCharsLengthPoint *lengthp;
 	UserCharsIndexPoint *indexp;
 	PhraseIndex *phridx;
-	int length, preflen;
-	guint number, prefnum;
+	int length;
+	guint number;
 
 	/* 检查条件是否满足 */
 	if (index == -1 || index >= root.indexs)
@@ -534,37 +536,29 @@ PhraseIndex *InquireUserPhrase::SearchIndexPreferPhrase(int8_t index,
 	indexp = root.table + index;
 	if (indexp->indexs == 0)
 		return NULL;
-
-	/* 预设已选中数值为空 */
-	preflenp = NULL;
-	preflen = 0;
-	prefnum = 0;
+	phridx = NULL;	//预设数据为空
 
 	/* 查询数据 */
-	length = 1;	//因为不可能存在长度为0的词语，所以长度预设为1
-	while (length <= indexp->indexs && length <= len) {
+	length = len < indexp->indexs ? len : indexp->indexs;
+	while (length >= 1) {
 		lengthp = indexp->table + length - 1;
-		number = 0;
-		while (number < lengthp->indexs) {
+		number = lengthp->indexs;
+		while (number >= 1) {
+			number--;
 			if (MatchCharsIndex(lengthp->chidx + length * number,
 							 chidx, length)) {
-				preflenp = lengthp;
-				preflen = length;
-				prefnum = number;
+				phridx = new PhraseIndex;
+				phridx->chidx = lengthp->chidx + length * number;
+				phridx->chlen = length;
+				phridx->offset = (lengthp->table + number)->offset;
+				phridx->freq = (lengthp->table + number)->freq;
+				break;
 			}
-			number++;
 		}
-		length++;
+		if (phridx)
+			break;
+		length--;
 	}
-
-	/* 检查处理结果 */
-	if (!preflenp)
-		return NULL;
-	phridx = new PhraseIndex;
-	phridx->chidx = preflenp->chidx + preflen * prefnum;
-	phridx->chlen = preflen;
-	phridx->offset = (preflenp->table + prefnum)->offset;
-	phridx->freq = (preflenp->table + prefnum)->freq;
 
 	return phridx;
 }

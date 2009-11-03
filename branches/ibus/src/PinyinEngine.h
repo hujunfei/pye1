@@ -71,6 +71,7 @@ private:
 	time_t timestamp;	///< 时间戳
 	time_t bakgap;		///< 备份时间间隔
 	guint prekey;		///< 前一个键值
+	bool enmode;		///< 临时英文编辑模式
 	bool chmode;		///< 汉语模式
 	bool flmode;		///< 字母全角模式
 	bool fpmode;		///< 标点全角模式

@@ -19,6 +19,15 @@
 #include "mess.h"
 
 /**
+ * 拼音校正单元.
+ * 为什么不声明成类？考虑一下(PinyinEditor)的实现，你就应该会明白了！ \n
+ */
+typedef struct {
+	const char *fstring;	///< 错误串
+	const char *tstring;	///< 正确串
+	bool isstatic;	///< 是否为静态串
+}RectifyUnit;
+/**
  * 引擎单元的类型.
  */
 typedef enum {
@@ -57,20 +66,20 @@ public:
 
 	void CreateSysEngineUnits(const char *sys);
 	void CreateUserEngineUnit(const char *user);
-	void AddCorrectPinyinPair(const char *pinyin1, const char *pinyin2);
+	void AddRectifyPinyinPair(const char *pinyin1, const char *pinyin2);
 	void AddFuzzyPinyinUnit(const char *unit1, const char *unit2);
 	void BakUserEnginePhrase();
 
 	void SyncEngineUnitData(GSList **euphrlist, time_t stamp) const;
 	void FeedbackPhraseData(const PhraseData *phrdt) const;
 	GSList *InquirePhraseIndex(const CharsIndex *chidx, int chlen) const;
-	GPtrArray *GetCorrectTable() const;
+	GArray *GetRectifyTable() const;
 private:
 	bool BreakMbfileString(char *lineptr, const char **mfile, const char **priority);
 	EngineUnit *CreateEngineUnit(const char *mfile, int priority, EUNIT_TYPE type);
 
 	GSList *eulist;		///< 引擎链表
-	GPtrArray *crttable;	///< 拼音矫正表
+	GArray *rtftable;	///< 拼音矫正表
 	int8_t *fztable;		///< 模糊拼音对照表
 
 	char *userpath;	///< 用户码表路径

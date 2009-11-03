@@ -31,8 +31,8 @@ extern PhraseEngine phregn;
  */
 PinyinEngine::PinyinEngine(IBusEngine *egn):engine(egn), pyedit(NULL),
  lktable(NULL), props(NULL), timestamp(0), bakgap(60),
- prekey(IBUS_VoidSymbol), chmode(true), flmode(false), fpmode(true),
- squote(false), dquote(false)
+ prekey(IBUS_VoidSymbol), enmode(false), chmode(true), flmode(false),
+ fpmode(true), squote(false), dquote(false)
 {
 	/* 创建拼音编辑器 */
 	pyedit = new PinyinEditor(&phregn);
@@ -69,7 +69,6 @@ void PinyinEngine::EngineReset()
 void PinyinEngine::EngineDisable()
 {
 	phregn.BakUserEnginePhrase();
-	time(&timestamp);
 	RestoreInitState();
 	ClearEngineUI();
 }
@@ -79,6 +78,7 @@ void PinyinEngine::EngineDisable()
  */
 void PinyinEngine::EngineEnable()
 {
+	time(&timestamp);
 }
 
 /**
@@ -87,6 +87,7 @@ void PinyinEngine::EngineEnable()
 void PinyinEngine::FocusIn()
 {
 	ibus_engine_register_properties(engine, props);
+	time(&timestamp);
 }
 
 /**
@@ -95,7 +96,6 @@ void PinyinEngine::FocusIn()
 void PinyinEngine::FocusOut()
 {
 	phregn.BakUserEnginePhrase();
-	time(&timestamp);
 }
 
 /**
@@ -103,7 +103,7 @@ void PinyinEngine::FocusOut()
  */
 void PinyinEngine::CursorDown()
 {
-	if (lktable->candidates->len - lktable->cursor_pos <= 1)
+	if (lktable->candidates->len - lktable->cursor_pos <= lktable->page_size)
 		AppendPageCandidate();
 	ibus_lookup_table_cursor_down(lktable);
 	ibus_engine_update_lookup_table_fast(engine, lktable, TRUE);
@@ -182,12 +182,10 @@ gboolean PinyinEngine::ProcessKeyEvent(guint keyval, guint keycode, guint state)
 
 	/* 对释放键的处理 */
 	if (state & IBUS_RELEASE_MASK) {
-		if (prekey != keyval)
-			return FALSE;
 		switch (keyval) {
 		case IBUS_Shift_L:
 		case IBUS_Shift_R:
-			if (pyedit->IsFinishInquirePhrase())
+			if (prekey == keyval && pyedit->IsEmpty())
 				ToggleModeChinese();
 			return TRUE;
 		}
@@ -254,6 +252,7 @@ IBusPropList *PinyinEngine::CreateProperty()
 			 NULL);
 	g_object_set_data(G_OBJECT(props), "mode.chinese", property);
 	ibus_prop_list_append(props, property);
+	g_object_unref(property);
 
 	/* 字母全/半角 */
 	property = ibus_property_new("mode.full_letter",
@@ -268,6 +267,7 @@ IBusPropList *PinyinEngine::CreateProperty()
 			 NULL);
 	g_object_set_data(G_OBJECT(props), "mode.full_letter", property);
 	ibus_prop_list_append(props, property);
+	g_object_unref(property);
 
 	/* 标点全/半角 */
 	property = ibus_property_new("mode.full_punct",
@@ -282,6 +282,7 @@ IBusPropList *PinyinEngine::CreateProperty()
 			 NULL);
 	g_object_set_data(G_OBJECT(props), "mode.full_punct", property);
 	ibus_prop_list_append(props, property);
+	g_object_unref(property);
 
 	/* 细节设置 */
 	property = ibus_property_new("setup",
@@ -295,6 +296,7 @@ IBusPropList *PinyinEngine::CreateProperty()
 			 NULL);
 	g_object_set_data(G_OBJECT(props), "setup", property);
 	ibus_prop_list_append(props, property);
+	g_object_unref(property);
 
 	return props;
 }
@@ -304,9 +306,11 @@ IBusPropList *PinyinEngine::CreateProperty()
  */
 void PinyinEngine::RestoreInitState()
 {
+	pyedit->SetEditorMode(true);
 	pyedit->FinishInquirePhrase();
 	ibus_lookup_table_clear(lktable);
 	prekey = IBUS_VoidSymbol;
+	enmode = false;
 	if (!chmode)
 		ToggleModeChinese();
 	if (flmode)
@@ -398,7 +402,15 @@ gboolean PinyinEngine::ProcessPinyin(guint keyval, guint keycode, guint state)
 
 	/* 英文模式 */
 	if (!chmode) {
-		CommitLetter(keyval);
+		CommitFinalChars(keyval);
+		return TRUE;
+	}
+
+	/* 是否需要进入临时英文模式 */
+	if (pyedit->IsEmpty() && !enmode && (keyval == 'u' || keyval == 'v')) {
+		pyedit->SetEditorMode(false);	//强制编辑器进入英文模式
+		enmode = true;
+		ShowEngineUI();
 		return TRUE;
 	}
 
@@ -422,9 +434,23 @@ gboolean PinyinEngine::ProcessCapitalLetter(guint keyval, guint keycode, guint s
 	if (CMSHM_FILTER(state) != 0)
 		return FALSE;
 
-	/* 提交字符 */
-	if (!chmode || (chmode && pyedit->IsFinishInquirePhrase()))
-		CommitLetter(keyval);
+	/* 英文模式 */
+	if (!chmode) {
+		CommitFinalChars(keyval);
+		return TRUE;
+	}
+
+	/* 中文模式，编辑器为空 */
+	if (pyedit->IsEmpty()) {
+		pyedit->SetEditorMode(false);	//强制编辑器进入英文模式
+		enmode = true;
+	}
+
+	/* 英文编辑模式 */
+	if (enmode) {
+		pyedit->InsertPinyinKey(keyval);
+		UpdateEngineUI();
+	}
 
 	return TRUE;
 }
@@ -440,16 +466,25 @@ gboolean PinyinEngine::ProcessNumber(guint keyval, guint keycode, guint state)
 {
 	guint pages, index;
 
+	/* 如果有修饰键则不处理 */
+	if (CMSHM_FILTER(state) != 0)
+		return FALSE;
+
 	/* 英语模式 */
 	if (!chmode) {
-		CommitLetter(keyval);
+		CommitFinalChars(keyval);
+		return TRUE;
+	}
+
+	/* 英文编辑模式 */
+	if (enmode) {
+		pyedit->InsertPinyinKey(keyval);
+		UpdateEngineUI();
 		return TRUE;
 	}
 
 	/* 汉语模式，编辑器为空 */
-	if (pyedit->IsFinishInquirePhrase()) {
-		if (CMSHM_FILTER(state) != 0)
-			return FALSE;
+	if (pyedit->IsEmpty()) {
 		switch (keyval) {
 		case IBUS_0 ... IBUS_9:
 			CommitLetter(keyval);
@@ -478,6 +513,7 @@ gboolean PinyinEngine::ProcessNumber(guint keyval, guint keycode, guint state)
 	}
 
 	/* 选择词语 */
+	//TODO 检查是否有效
 	pages = lktable->cursor_pos / lktable->page_size;
 	SelectCandidatePhrase(pages * lktable->page_size + index);
 
@@ -497,39 +533,66 @@ gboolean PinyinEngine::ProcessSpace(guint keyval, guint keycode, guint state)
 	if (CMSHM_FILTER(state) != 0)
 		return FALSE;
 
+	/* 英语模式 */
+	if (!chmode) {
+		CommitFinalChars(keyval);
+		return TRUE;
+	}
+
+	/* 英文编辑模式 */
+	if (enmode) {
+		pyedit->InsertPinyinKey(keyval);
+		UpdateEngineUI();
+		return TRUE;
+	}
+
 	/* 中文模式，编辑器不为空 */
-	if (chmode && !pyedit->IsFinishInquirePhrase())
+	if (!pyedit->IsEmpty()) {
 		SelectCandidatePhrase(lktable->cursor_pos);
-	else
-		CommitPunct(keyval);
+		return TRUE;
+	}
+
+	/* 中文模式，编辑器为空 */
+	CommitPunct(keyval);
 
 	return TRUE;
 }
 
 gboolean PinyinEngine::ProcessPunct(guint keyval, guint keycode, guint state)
 {
-	/* 英文模式 */
-	if  (!chmode) {
-		CommitPunct(keyval);
+	/* 如果有修饰键则不处理 */
+	if (CMSHM_FILTER(state) != 0)
+		return FALSE;
+
+	/* 英语模式 */
+	if (!chmode) {
+		CommitFinalChars(keyval);
+		return TRUE;
+	}
+
+	/* 英文编辑模式 */
+	if (enmode) {
+		pyedit->InsertPinyinKey(keyval);
+		UpdateEngineUI();
 		return TRUE;
 	}
 
 	/* 中文模式，编辑器不为空 */
-	if (!pyedit->IsFinishInquirePhrase()) {
+	if (!pyedit->IsEmpty()) {
 		switch (keyval) {
 		case IBUS_minus:
 		case IBUS_comma:
 			PageUp();
-			return TRUE;
+			break;
 		case IBUS_equal:
 		case IBUS_period:
 			PageDown();
-			return TRUE;
+			break;
 		case IBUS_apostrophe:
 			ProcessPinyin(keyval, keycode, state);
-			return TRUE;
+			break;
 		}
-		return FALSE;
+		return TRUE;
 	}
 
 	/* 中文模式，编辑器为空 */
@@ -597,7 +660,7 @@ gboolean PinyinEngine::ProcessOthers(guint keyval, guint keycode, guint state)
 	guint pages;
 
 	/* 编辑器为空 */
-	if (pyedit->IsFinishInquirePhrase())
+	if (pyedit->IsEmpty())
 		return FALSE;
 
 	/* ignore numlock */
@@ -621,7 +684,7 @@ gboolean PinyinEngine::ProcessOthers(guint keyval, guint keycode, guint state)
 	case IBUS_BackSpace:
 		if (!pyedit->RevokeSelectedPhrase())
 			pyedit->BackspacePinyinKey();
-		if (!pyedit->IsFinishInquirePhrase())
+		if (!pyedit->IsEmpty())
 			UpdateEngineUI();
 		else
 			ClearEngineUI();
@@ -659,10 +722,29 @@ void PinyinEngine::UpdateEngineUI()
 	char *textdt;
 	gunichar2 *data;
 	glong length;
+	guint size;
+
+	/* 如果在临时英文模式下 */
+	if (enmode) {
+		ibus_lookup_table_clear(lktable);
+		ibus_engine_update_lookup_table(engine, lktable, TRUE);
+		pyedit->GetRawText(&textdt, &size);
+		if (size != 0) {
+			text = ibus_text_new_from_static_string(textdt);
+			g_object_set_data_full(G_OBJECT(text), "text", textdt,
+						 GDestroyNotify(g_free));
+		} else
+			text = ibus_text_new_from_static_string("");
+		ibus_engine_update_auxiliary_text(engine, text, TRUE);
+		ibus_engine_update_preedit_text(engine, text, length, TRUE);
+		g_object_unref(text);
+		return;
+	}
 
 	/* 更新候选字 */
 	ibus_lookup_table_clear(lktable);
 	AppendPageCandidate();
+	ibus_engine_update_lookup_table(engine, lktable, TRUE);
 
 	/* 更新辅助文本 */
 	pyedit->GetAuxiliaryText(&data, &length);
@@ -673,6 +755,7 @@ void PinyinEngine::UpdateEngineUI()
 		g_object_set_data_full(G_OBJECT(text), "text", textdt,
 						 GDestroyNotify(g_free));
 		ibus_engine_update_auxiliary_text(engine, text, TRUE);
+		g_object_unref(text);
 	} else
 		ibus_engine_hide_auxiliary_text(engine);
 
@@ -685,18 +768,24 @@ void PinyinEngine::UpdateEngineUI()
 		g_object_set_data_full(G_OBJECT(text), "text", textdt,
 						 GDestroyNotify(g_free));
 		ibus_engine_update_preedit_text(engine, text, length, TRUE);
+		g_object_unref(text);
 	} else
 		ibus_engine_hide_preedit_text(engine);
 }
 
 /**
- * 显示引擎的UI.
+ * 重置并显示引擎的UI.
  */
 void PinyinEngine::ShowEngineUI()
 {
-	ibus_engine_show_lookup_table(engine);
-	ibus_engine_show_auxiliary_text(engine);
-	ibus_engine_show_preedit_text(engine);
+	IBusText *text;
+
+	ibus_lookup_table_clear(lktable);
+	ibus_engine_update_lookup_table_fast(engine, lktable, TRUE);
+	text = ibus_text_new_from_static_string("");
+	ibus_engine_update_auxiliary_text(engine, text, TRUE);
+	ibus_engine_update_preedit_text(engine, text, 0, TRUE);
+	g_object_unref(text);
 }
 
 /**
@@ -715,8 +804,10 @@ void PinyinEngine::HideEngineUI()
 void PinyinEngine::ClearEngineUI()
 {
 	pyedit->FinishInquirePhrase();
+	pyedit->SetEditorMode(true);
 	ibus_lookup_table_clear(lktable);
 	HideEngineUI();
+	enmode = false;
 }
 
 /**
@@ -741,9 +832,9 @@ void PinyinEngine::AppendPageCandidate()
 						 GDestroyNotify(g_free));
 		g_object_set_data(G_OBJECT(text), "data", phrdt);
 		ibus_lookup_table_append_candidate(lktable, text);
+		g_object_unref(text);
 		tlist = g_slist_next(tlist);
 	}
-	ibus_engine_update_lookup_table(engine, lktable, TRUE);
 	g_slist_free(phrlist);
 }
 
@@ -788,6 +879,7 @@ void PinyinEngine::CommitPhrase()
 		g_object_set_data_full(G_OBJECT(text), "text", textdt,
 						 GDestroyNotify(g_free));
 		ibus_engine_commit_text(engine, text);
+		g_object_unref(text);
 		/* 反馈词语 */
 		pyedit->FeedbackSelectedPhrase();
 	}
@@ -816,6 +908,7 @@ void PinyinEngine::CommitRawPhrase()
 		g_object_set_data_full(G_OBJECT(text), "text", textdt,
 						 GDestroyNotify(g_free));
 		ibus_engine_commit_text(engine, text);
+		g_object_unref(text);
 	}
 }
 
@@ -830,6 +923,7 @@ void PinyinEngine::CommitLetter(gunichar ch)
 	ch = flmode ? HalfFullConverter::ToFull(ch) : ch;
 	text = ibus_text_new_from_unichar(ch);
 	ibus_engine_commit_text(engine, text);
+	g_object_unref(text);
 }
 
 /**
@@ -843,6 +937,7 @@ void PinyinEngine::CommitPunct(gunichar ch)
 	ch = fpmode ? HalfFullConverter::ToFull(ch) : ch;
 	text = ibus_text_new_from_unichar(ch);
 	ibus_engine_commit_text(engine, text);
+	g_object_unref(text);
 }
 
 /**
@@ -855,6 +950,7 @@ void PinyinEngine::CommitFinalChars(gunichar ch)
 
 	text = ibus_text_new_from_unichar(ch);
 	ibus_engine_commit_text(engine, text);
+	g_object_unref(text);
 }
 
 /**
@@ -867,6 +963,7 @@ void PinyinEngine::CommitString(const gchar *str)
 
 	text = ibus_text_new_from_string(str);
 	ibus_engine_commit_text(engine, text);
+	g_object_unref(text);
 }
 
 /**
@@ -879,4 +976,5 @@ void PinyinEngine::CommitStaticString(const gchar *str)
 
 	text = ibus_text_new_from_static_string(str);
 	ibus_engine_commit_text(engine, text);
+	g_object_unref(text);
 }

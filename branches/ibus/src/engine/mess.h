@@ -53,7 +53,7 @@ public:
 
 	const CharsIndex *chidx;	///< 汉字索引数组 *
 	int chlen;		///< 汉字索引数组有效长度
-	off_t offset;		///< 词语索引偏移量,系统词汇(-1)
+	off_t offset;		///< 词语索引偏移量,系统词汇(-1),无效词汇(0)
 	gunichar2 *data;	///< 词语数据 *
 	glong dtlen;		///< 词语数据有效长度
 };

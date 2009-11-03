@@ -48,6 +48,8 @@ private:
 	int8_t SearchMatchUnit(const char *ptr);
 	void AppendCharsIndex(CharsIndex *chidx, int *point,
 				 PyUnitFlags *type, int8_t index);
+
+	static PinyinUnit pyunits[];	///< 拼音单元表.
 };
 
 #endif

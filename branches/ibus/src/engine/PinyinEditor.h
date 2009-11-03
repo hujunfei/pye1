@@ -20,7 +20,9 @@ public:
 	PinyinEditor(PhraseEngine *engine);
 	~PinyinEditor();
 
+	bool IsEmpty();
 	bool SyncData();
+	bool SetEditorMode(bool zh);
 	bool MoveCursorPoint(int offset);
 	bool InsertPinyinKey(char ch);
 	bool DeletePinyinKey();
@@ -40,14 +42,16 @@ private:
 	void CreateCharsIndex();
 	void InquirePhraseIndex();
 	int ComputeInquireOffset();
-	char *CorrectPinyinString();
 	EunitPhrase *SearchPreferEunitPhrase();
 	bool IsExistCachePhrase(const PhraseData *phrdt);
+	char *RectifyPinyinString(const char *string, const GArray *rtftable);
+	char *RectifyPinyinString(const char *string, const RectifyUnit *rtftable);
 	void ClearEngineUnitBuffer();
 	void ClearPinyinEditorBuffer();
 	void ClearPinyinEditorOldBuffer();
 	void ClearPinyinEditorTempBuffer();
 
+	bool editmode;		///< 当前编辑模式;true 中文,false 英文
 	GArray *pytable;	///< 待查询拼音表
 	guint cursor;		///< 光标位置
 	CharsIndex *chidx;	///< 汉字索引数组
@@ -58,6 +62,8 @@ private:
 	const PhraseEngine *phregn;	///< 词语引擎
 	GSList *euphrlist;	///< 引擎词语索引缓冲点链表
 	time_t timestamp;	///< 引擎缓冲数据的时间戳
+
+	static RectifyUnit irtytable[];	///< 内置拼音修正表
 };
 
 #endif

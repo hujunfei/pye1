@@ -39,14 +39,14 @@ EunitPhrase::~EunitPhrase()
 /**
  * 类构造函数.
  */
-PhraseEngine::PhraseEngine():eulist(NULL), crttable(NULL), fztable(NULL),
+PhraseEngine::PhraseEngine():eulist(NULL), rtftable(NULL), fztable(NULL),
  userpath(NULL), bakpath(NULL), timestamp(0)
 {
 	ParseString parse;
 	int8_t count, sum;
 
 	/* 拼音矫正表 */
-	crttable = g_ptr_array_new();
+	rtftable = g_array_new(FALSE, FALSE, sizeof(RectifyUnit));
 	/* 模糊拼音对照表 */
 	sum = parse.GetPinyinUnitSum();
 	fztable = (int8_t *)g_malloc(sum);
@@ -59,6 +59,9 @@ PhraseEngine::PhraseEngine():eulist(NULL), crttable(NULL), fztable(NULL),
  */
 PhraseEngine::~PhraseEngine()
 {
+	guint count;
+	RectifyUnit *rtfunit;
+
 	/* 备份用户词语数据 */
 	BakUserEnginePhrase();
 	/* 释放引擎链表 */
@@ -66,8 +69,16 @@ PhraseEngine::~PhraseEngine()
 		delete (EngineUnit *)tlist->data;
 	g_slist_free(eulist);
 	/* 释放拼音矫正表 */
-	g_ptr_array_foreach(crttable, GFunc(g_free), NULL);
-	g_ptr_array_free(crttable, TRUE);
+	count = 0;
+	while (count < rtftable->len) {
+		rtfunit = &g_array_index(rtftable, RectifyUnit, count);
+		if (!rtfunit->isstatic) {
+			g_free((gpointer)rtfunit->fstring);
+			g_free((gpointer)rtfunit->tstring);
+		}
+		count++;
+	}
+	g_array_free(rtftable, TRUE);
 	/* 释放模糊拼音对照表 */
 	g_free(fztable);
 	/* 释放码表路径 */
@@ -143,10 +154,14 @@ void PhraseEngine::CreateUserEngineUnit(const char *user)
  * @param pinyin1 待矫正拼音串
  * @param pinyin2 矫正拼音串
  */
-void PhraseEngine::AddCorrectPinyinPair(const char *pinyin1, const char *pinyin2)
+void PhraseEngine::AddRectifyPinyinPair(const char *pinyin1, const char *pinyin2)
 {
-	g_ptr_array_add(crttable, g_strdup(pinyin1));
-	g_ptr_array_add(crttable, g_strdup(pinyin2));
+	RectifyUnit rtfunit;
+
+	rtfunit.fstring = g_strdup(pinyin1);
+	rtfunit.tstring = g_strdup(pinyin2);
+	rtfunit.isstatic = false;
+	g_array_append_val(rtftable, rtfunit);
 }
 
 /**
@@ -229,6 +244,10 @@ void PhraseEngine::FeedbackPhraseData(const PhraseData *phrdt) const
 	GSList *tlist;
 	EngineUnit *eu;
 
+	/* 如果此词汇无效则直接退出即可 */
+	if (phrdt->offset == 0)
+		return;
+
 	/* 查询用户词语引擎单元 */
 	tlist = eulist;
 	while (tlist) {
@@ -277,9 +296,9 @@ GSList *PhraseEngine::InquirePhraseIndex(const CharsIndex *chidx, int chlen) con
  * 获取拼音矫正表.
  * @return 拼音矫正表
  */
-GPtrArray *PhraseEngine::GetCorrectTable() const
+GArray *PhraseEngine::GetRectifyTable() const
 {
-	return crttable;
+	return rtftable;
 }
 
 /**
