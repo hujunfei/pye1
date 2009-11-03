@@ -53,6 +53,7 @@ private:
 	void ShowEngineUI();
 	void HideEngineUI();
 	void ClearEngineUI();
+	void AppendDynamicPhrase();
 	void AppendPageCandidate();
 	void SelectCandidatePhrase(guint index);
 	void CommitPhrase();

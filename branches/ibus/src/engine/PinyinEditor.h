@@ -33,6 +33,7 @@ public:
 	bool GetPreeditText(gunichar2 **text, glong *len);
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);
 	bool GetPagePhrase(GSList **list, guint *len);
+	bool GetDynamicPhrase(GSList **list, guint *len);
 	bool SelectCachePhrase(PhraseData *phrdt);
 	bool FeedbackSelectedPhrase();
 	bool IsFinishInquirePhrase();

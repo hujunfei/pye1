@@ -142,15 +142,24 @@ GSList *InquireUserPhrase::SearchMatchPhrase(const CharsIndex *chidx, int len)
  */
 PhraseIndex *InquireUserPhrase::SearchPreferPhrase(const CharsIndex *chidx, int len)
 {
-	PhraseIndex *phridx;
+	PhraseIndex *phridx1, *phridx2;
 	int8_t index;
 
-	if ( (phridx = SearchIndexPreferPhrase(chidx->major, chidx, len)))
-		return phridx;
+	phridx1 = SearchIndexPreferPhrase(chidx->major, chidx, len);
 	index = fztable ? *(fztable + chidx->major) : -1;
-	phridx = SearchIndexPreferPhrase(index, chidx, len);
+	phridx2 = SearchIndexPreferPhrase(index, chidx, len);
+	if (phridx1 && phridx2) {
+		if (phridx1->chlen > phridx2->chlen
+			 || (phridx1->chlen == phridx2->chlen
+				 && phridx1->freq >= phridx2->freq)) {
+			delete phridx2;
+			phridx2 = phridx1;
+		} else
+			delete phridx1;
+	} else if (phridx1)
+		phridx2 = phridx1;
 
-	return phridx;
+	return phridx2;
 }
 
 /**

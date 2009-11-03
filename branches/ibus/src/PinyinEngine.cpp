@@ -743,6 +743,7 @@ void PinyinEngine::UpdateEngineUI()
 
 	/* 更新候选字 */
 	ibus_lookup_table_clear(lktable);
+	AppendDynamicPhrase();
 	AppendPageCandidate();
 	ibus_engine_update_lookup_table(engine, lktable, TRUE);
 
@@ -808,6 +809,33 @@ void PinyinEngine::ClearEngineUI()
 	ibus_lookup_table_clear(lktable);
 	HideEngineUI();
 	enmode = false;
+}
+
+/**
+ * 添加动态词语.
+ */
+void PinyinEngine::AppendDynamicPhrase()
+{
+	PhraseData *phrdt;
+	IBusText *text;
+	char *textdt;
+	GSList *phrlist, *tlist;
+	guint length;
+
+	pyedit->GetDynamicPhrase(&phrlist, &length);
+	tlist = phrlist;
+	while (tlist) {
+		phrdt = (PhraseData *)tlist->data;
+		textdt = g_utf16_to_utf8(phrdt->data, phrdt->dtlen, NULL, NULL, NULL);
+		text = ibus_text_new_from_static_string(textdt);
+		g_object_set_data_full(G_OBJECT(text), "text", textdt,
+						 GDestroyNotify(g_free));
+		g_object_set_data(G_OBJECT(text), "data", phrdt);
+		ibus_lookup_table_append_candidate(lktable, text);
+		g_object_unref(text);
+		tlist = g_slist_next(tlist);
+	}
+	g_slist_free(phrlist);
 }
 
 /**

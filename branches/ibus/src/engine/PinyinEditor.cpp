@@ -407,7 +407,6 @@ bool PinyinEditor::GetAuxiliaryText(gunichar2 **text, glong *len)
  */
 bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 {
-	DynamicPhrase dyphr;
 	EunitPhrase *euphr;
 	PhraseIndex *phridx;
 	PhraseData *phrdt;
@@ -417,13 +416,6 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 	pagesize = *len;
 	*list = NULL;
 	*len = 0;
-
-	/* 如果是第一次获取，则先尝试获取动态词语 */
-	if (!aclist && !cclist) {
-		*list = dyphr.GetDynamicPhrase(pytable->data, len);
-		for (GSList *tlist = *list; tlist; tlist = g_slist_next(tlist))
-			cclist = g_slist_prepend(cclist, tlist->data);	//减少时间开支
-	}
 
 	/* 提取一页的词语数据 */
 	while (*len < pagesize) {
@@ -439,6 +431,32 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 			(*len)++;
 		} else
 			delete phrdt;
+	}
+
+	return (*list);
+}
+
+/**
+ * 获取动态词语.
+ * @retval list 词语链表
+ * @retval len 词语链表长度
+ * @return 执行状况
+ */
+bool PinyinEditor::GetDynamicPhrase(GSList **list, guint *len)
+{
+	DynamicPhrase dyphr;
+	GSList *tlist;
+
+	/* 初始化参数 */
+	*list = NULL;
+	*len = 0;
+
+	/* 提取动态词语并放入缓冲链表 */
+	*list = dyphr.GetDynamicPhrase(pytable->data, len);
+	tlist = *list;
+	while (tlist) {
+		cclist = g_slist_prepend(cclist, tlist->data);	//减少时间开支
+		tlist = g_slist_next(tlist);
 	}
 
 	return (*list);
