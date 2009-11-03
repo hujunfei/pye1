@@ -71,6 +71,7 @@ public:
 	void BakUserEnginePhrase();
 
 	void SyncEngineUnitData(GSList **euphrlist, time_t stamp) const;
+	void DeletePhraseData(const PhraseData *phrdt) const;
 	void FeedbackPhraseData(const PhraseData *phrdt) const;
 	GSList *InquirePhraseIndex(const CharsIndex *chidx, int chlen) const;
 	GArray *GetRectifyTable() const;
