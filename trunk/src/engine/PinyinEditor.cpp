@@ -469,8 +469,6 @@ bool PinyinEditor::GetDynamicPhrase(GSList **list, guint *len)
  */
 bool PinyinEditor::SelectCachePhrase(PhraseData *phrdt)
 {
-	GSList *tlist;
-
 	/* 将词语数据加入已接受词语链表 */
 	aclist = g_slist_append(aclist, phrdt);
 	/* 清空缓冲数据 */
