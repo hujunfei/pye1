@@ -123,7 +123,7 @@ void PinyinEngine::CursorUp()
  */
 void PinyinEngine::PageDown()
 {
-	if (lktable->candidates->len - lktable->cursor_pos <= lktable->page_size)
+	if (lktable->candidates->len - lktable->cursor_pos < (lktable->page_size << 1))
 		AppendPageCandidate();
 	ibus_lookup_table_page_down(lktable);
 	ibus_engine_update_lookup_table_fast(engine, lktable, TRUE);
@@ -790,6 +790,7 @@ void PinyinEngine::UpdateEngineUI()
 	/* 更新候选字 */
 	ibus_lookup_table_clear(lktable);
 	AppendDynamicPhrase();
+	AppendComposePhrase();
 	AppendPageCandidate();
 	ibus_engine_update_lookup_table(engine, lktable, TRUE);
 
@@ -858,6 +859,30 @@ void PinyinEngine::ClearEngineUI()
 }
 
 /**
+ * 添加合成词语.
+ */
+void PinyinEngine::AppendComposePhrase()
+{
+	PhraseData *phrdt;
+	IBusText *text;
+	char *textdt;
+
+	phrdt = NULL;
+	pyedit->GetComposePhrase(&phrdt);
+	if (!phrdt)
+		return;
+	textdt = g_utf16_to_utf8(phrdt->data, phrdt->dtlen, NULL, NULL, NULL);
+	text = ibus_text_new_from_static_string(textdt);
+	ibus_text_append_attribute(text, IBUS_ATTR_TYPE_FOREGROUND, 0xff0000,
+							 0, phrdt->dtlen);
+	g_object_set_data_full(G_OBJECT(text), "text", textdt,
+					 GDestroyNotify(g_free));
+	g_object_set_data(G_OBJECT(text), "data", phrdt);
+	ibus_lookup_table_append_candidate(lktable, text);
+	g_object_unref(text);
+}
+
+/**
  * 添加动态词语.
  */
 void PinyinEngine::AppendDynamicPhrase()
@@ -902,7 +927,7 @@ void PinyinEngine::AppendPageCandidate()
 		phrdt = (PhraseData *)tlist->data;
 		textdt = g_utf16_to_utf8(phrdt->data, phrdt->dtlen, NULL, NULL, NULL);
 		text = ibus_text_new_from_static_string(textdt);
-		if (phrdt->offset != 0 && phrdt->offset != (off_t)(-1)) {
+		if (phrdt->offset >= 1) {
 			ibus_text_append_attribute(text, IBUS_ATTR_TYPE_FOREGROUND, 0xff,
 									 0, phrdt->dtlen);
 		}

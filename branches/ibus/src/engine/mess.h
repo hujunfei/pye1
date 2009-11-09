@@ -49,11 +49,11 @@ public:
 class PhraseData {
 public:
 	PhraseData():chidx(NULL), chlen(0), offset(0), data(NULL), dtlen(0) {}
-	~PhraseData() {g_free(data);}
+	~PhraseData() {delete [] chidx; g_free(data);}
 
-	const CharsIndex *chidx;	///< 汉字索引数组 *
+	CharsIndex *chidx;	///< 汉字索引数组 *
 	int chlen;		///< 汉字索引数组有效长度
-	off_t offset;		///< 词语索引偏移量,系统词汇(-1),无效词汇(0)
+	off_t offset;		///< 词语索引偏移量,系统词汇(-1),无效词汇(0),用户词汇(>=1)
 	gunichar2 *data;	///< 词语数据 *
 	glong dtlen;		///< 词语数据有效长度
 };
