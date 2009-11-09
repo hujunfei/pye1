@@ -1,1 +1,1 @@
-_PinYin user guide - Chinese version_
+= pinyin user guide - Chinese version =
