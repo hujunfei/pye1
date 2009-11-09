@@ -49,7 +49,7 @@ public:
 class PhraseData {
 public:
 	PhraseData():chidx(NULL), chlen(0), offset(0), data(NULL), dtlen(0) {}
-	~PhraseData() {delete[] chidx; g_free(data);}
+	~PhraseData() {delete [] chidx; g_free(data);}
 
 	CharsIndex *chidx;	///< 汉字索引数组 *
 	int chlen;		///< 汉字索引数组有效长度

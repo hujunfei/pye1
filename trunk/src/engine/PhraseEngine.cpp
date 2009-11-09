@@ -83,6 +83,7 @@ PhraseEngine::~PhraseEngine()
 	g_free(fztable);
 	/* 释放码表路径 */
 	g_free(userpath);
+	unlink(bakpath);	//移除备份文件
 	g_free(bakpath);
 }
 
