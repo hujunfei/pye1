@@ -427,7 +427,7 @@ bool PinyinEditor::GetPagePhrase(GSList **list, guint *len)
 		delete phridx;
 		if (!IsExistCachePhrase(phrdt)) {
 			*list = g_slist_append(*list, phrdt);
-			cclist = g_slist_prepend(cclist, phrdt);	//减少时间开支
+			cclist = g_slist_prepend(cclist, phrdt);
 			(*len)++;
 		} else
 			delete phrdt;
@@ -455,11 +455,102 @@ bool PinyinEditor::GetDynamicPhrase(GSList **list, guint *len)
 	*list = dyphr.GetDynamicPhrase(pytable->data, len);
 	tlist = *list;
 	while (tlist) {
-		cclist = g_slist_prepend(cclist, tlist->data);	//减少时间开支
+		cclist = g_slist_prepend(cclist, tlist->data);
 		tlist = g_slist_next(tlist);
 	}
 
 	return (*list);
+}
+
+/**
+ * 获取引擎合成词语.
+ * @retval phrdt 词语数据
+ * @return 执行状况
+ */
+bool PinyinEditor::GetComposePhrase(PhraseData **phrdt)
+{
+	GSList *tlist, *phrdtlist;
+	EunitPhrase *euphr;
+	PhraseIndex *phridx;
+	PhraseData *tphrdt;
+	int offset;
+	glong length;
+
+	/* 初始化 */
+	*phrdt = NULL;
+
+	/* 获取合成词语的各部分词语数据 */
+	phrdtlist = NULL;
+	/*/* 第一个词语数据 */
+	tphrdt = NULL;
+	if ( (tlist = g_slist_last(cclist))) {
+		tphrdt = (PhraseData *)tlist->data;
+	} else if ( (euphr = SearchPreferEunitPhrase())) {
+		phridx = (PhraseIndex *)euphr->phrlist->data;
+		tphrdt = euphr->eunit->inqphr->AnalysisPhraseIndex(phridx);
+	}
+	if (!tphrdt)
+		return false;
+	phrdtlist = g_slist_append(phrdtlist, tphrdt);
+	offset = ComputeInquireOffset() + tphrdt->chlen;
+	/*/* 其余词语数据 */
+	while (offset != chlen) {
+		if (!(euphr = phregn->InquirePerferPhraseIndex(chidx + offset,
+							 chlen - offset)))
+			break;
+		phridx = (PhraseIndex *)euphr->phrlist->data;
+		tphrdt = euphr->eunit->inqphr->AnalysisPhraseIndex(phridx);
+		phrdtlist = g_slist_append(phrdtlist, tphrdt);
+		offset += tphrdt->chlen;
+		delete euphr;
+	}
+	if (g_slist_length(phrdtlist) == 1) {
+		if (!cclist)
+			delete (PhraseData *)phrdtlist->data;
+		g_slist_free(phrdtlist);
+		return false;
+	}
+
+	/* 计算需要的空间 */
+	offset = 0;
+	length = 0;
+	tlist = phrdtlist;
+	while (tlist) {
+		tphrdt = (PhraseData *)tlist->data;
+		offset += tphrdt->chlen;
+		length += tphrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+
+	/* 组装词语 */
+	*phrdt = new PhraseData;
+	(*phrdt)->chidx = new CharsIndex[offset];
+	(*phrdt)->chlen = 0;
+	(*phrdt)->offset = (off_t)(-1);	//标记这是系统词汇
+	(*phrdt)->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * length);
+	(*phrdt)->dtlen = 0;
+	tlist = phrdtlist;
+	while (tlist) {
+		tphrdt = (PhraseData *)tlist->data;
+		memcpy((*phrdt)->chidx + (*phrdt)->chlen, tphrdt->chidx,
+				 sizeof(CharsIndex) * tphrdt->chlen);
+		(*phrdt)->chlen += tphrdt->chlen;
+		memcpy((*phrdt)->data + (*phrdt)->dtlen, tphrdt->data,
+				 sizeof(gunichar2) * tphrdt->dtlen);
+		(*phrdt)->dtlen += tphrdt->dtlen;
+		tlist = g_slist_next(tlist);
+	}
+
+	/* 善后工作 */
+	tlist = cclist ? phrdtlist->next : phrdtlist;
+	while (tlist) {
+		delete (PhraseData *)tlist->data;
+		tlist = g_slist_next(tlist);
+	}
+	g_slist_free(phrdtlist);
+	cclist = g_slist_prepend(cclist, *phrdt);
+
+	return true;
 }
 
 /**
@@ -516,10 +607,8 @@ bool PinyinEditor::FeedbackSelectedPhrase()
 	/* 反馈词语数据 */
 	phregn->FeedbackPhraseData(phrdt);
 	/* 如果词语是临时合成，则需要手工释放 */
-	if (length > 1) {
-		delete [] (CharsIndex *)phrdt->chidx;	//必须单独释放
+	if (length > 1)
 		delete phrdt;
-	}
 
 	return true;
 }
@@ -571,7 +660,7 @@ PhraseData *PinyinEditor::CreateUserPhrase()
 	phrdt = new PhraseData;
 	phrdt->chidx = new CharsIndex[chlen];
 	phrdt->chlen = 0;
-	phrdt->offset = (off_t)(-1);
+	phrdt->offset = (off_t)(-1);	//标记这是系统词汇
 	phrdt->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * dtlen);
 	phrdt->dtlen = 0;
 	tlist = aclist;
@@ -624,7 +713,7 @@ void PinyinEditor::InquirePhraseIndex()
 
 	/* 查询词语索引 */
 	offset = ComputeInquireOffset();
-	euphrlist = phregn->InquirePhraseIndex(chidx + offset, chlen - offset);
+	euphrlist = phregn->InquireMatchPhraseIndex(chidx + offset, chlen - offset);
 	time(&timestamp);	//更新时间戳
 }
 

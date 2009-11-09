@@ -167,8 +167,8 @@ PhraseData *InquireSysPhrase::AnalysisPhraseIndex(const PhraseIndex *phridx)
 	PhraseData *phrdt;
 
 	phrdt = new PhraseData;
-	phrdt->chidx = (CharsIndex *)g_memdup(phridx->chidx, sizeof(CharsIndex) *
-								 phridx->chlen);
+	phrdt->chidx = new CharsIndex[phridx->chlen];
+	memcpy(phrdt->chidx, phridx->chidx, sizeof(CharsIndex) * phridx->chlen);
 	phrdt->chlen = phridx->chlen;
 	phrdt->offset = phridx->offset;
 	lseek(root.fd, phrdt->offset, SEEK_SET);
@@ -177,7 +177,7 @@ PhraseData *InquireSysPhrase::AnalysisPhraseIndex(const PhraseIndex *phridx)
 	xread(root.fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
 	phrdt->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * phrdt->dtlen);
 	xread(root.fd, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
-	phrdt->offset = (off_t)(-1);	//标记这是系统词语
+	phrdt->offset = (off_t)(-1);	//标记这是系统词汇
 
 	return phrdt;
 }

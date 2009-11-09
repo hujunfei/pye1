@@ -34,6 +34,7 @@ public:
 	bool GetAuxiliaryText(gunichar2 **text, glong *len);
 	bool GetPagePhrase(GSList **list, guint *len);
 	bool GetDynamicPhrase(GSList **list, guint *len);
+	bool GetComposePhrase(PhraseData **phrdt);
 	bool SelectCachePhrase(PhraseData *phrdt);
 	bool DeletePhraseData(PhraseData *phrdt);
 	bool FeedbackSelectedPhrase();
@@ -59,7 +60,7 @@ private:
 	CharsIndex *chidx;	///< 汉字索引数组
 	int chlen;		///< 汉字索引数组长度
 	GSList *aclist;		///< 已接受词语链表
-	GSList *cclist;		///< 缓冲词语链表
+	GSList *cclist;		///< 缓冲词语链表(逆序)
 
 	const PhraseEngine *phregn;	///< 词语引擎
 	GSList *euphrlist;	///< 引擎词语索引缓冲点链表

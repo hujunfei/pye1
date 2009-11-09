@@ -10,13 +10,7 @@
 //
 //
 #include "DynamicPhrase.h"
-
-/**
- * 动态数据索引.
- * 其实并没有什么实际的用处，只因为(PhraseData::chidx)不能为(NULL)，
- * 而我们又不能动态申请一片内存，所以就只好采用这种狗屎方案了. \n
- */
-CharsIndex DynamicPhrase::chidx[2] = {};
+#include "ParseString.h"
 
 DynamicPhrase::DynamicPhrase()
 {
@@ -51,22 +45,28 @@ GSList *DynamicPhrase::GetDynamicPhrase(const char *string, guint *len)
  */
 GSList *DynamicPhrase::GetDatePhrase(guint *len)
 {
+	ParseString parse;
+	CharsIndex chidx[2];
 	PhraseData *phrdt;
 	GSList *phrlist;
 	gchar *ptr;
 	struct tm *tm;
 	time_t tt;
 
+	/* 预备工作 */
+	chidx[0].major = parse.GetStringIndex("r");
+	chidx[1].major = parse.GetStringIndex("q");
+	*len = 0;
+	phrlist = NULL;
 	time(&tt);
 	tm = localtime(&tt);
-	phrlist = NULL;
-	*len = 0;
 
 	/* 2009年11月2日 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("%d年%d月%d日", tm->tm_year + 1900,
 				 tm->tm_mon + 1, tm->tm_mday);
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
@@ -76,9 +76,10 @@ GSList *DynamicPhrase::GetDatePhrase(guint *len)
 
 	/* 2009-11-02 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("%04d-%02d-%02d", tm->tm_year + 1900,
 					 tm->tm_mon + 1, tm->tm_mday);
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
@@ -88,9 +89,10 @@ GSList *DynamicPhrase::GetDatePhrase(guint *len)
 
 	/* 2009.11.02 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("%04d.%02d.%02d", tm->tm_year + 1900,
 					 tm->tm_mon + 1, tm->tm_mday);
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
@@ -100,9 +102,10 @@ GSList *DynamicPhrase::GetDatePhrase(guint *len)
 
 	/* 11/02/2009 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("%02d/%02d/%04d", tm->tm_mon + 1, tm->tm_mday,
 							 tm->tm_year + 1900);
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
@@ -120,22 +123,28 @@ GSList *DynamicPhrase::GetDatePhrase(guint *len)
  */
 GSList *DynamicPhrase::GetTimePhrase(guint *len)
 {
+	ParseString parse;
+	CharsIndex chidx[2];
 	PhraseData *phrdt;
 	GSList *phrlist;
 	gchar *ptr;
 	struct tm *tm;
 	time_t tt;
 
+	/* 预备工作 */
+	chidx[0].major = parse.GetStringIndex("s");
+	chidx[1].major = parse.GetStringIndex("j");
+	*len = 0;
+	phrlist = NULL;
 	time(&tt);
 	tm = localtime(&tt);
-	phrlist = NULL;
-	*len = 0;
 
 	/* 12时45分27秒 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("%d时%d分%d秒", tm->tm_hour, tm->tm_min, tm->tm_sec);
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
 	g_free(ptr);
@@ -144,9 +153,10 @@ GSList *DynamicPhrase::GetTimePhrase(guint *len)
 
 	/* 12:45:27 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("%02d:%02d:%02d", tm->tm_hour, tm->tm_min, tm->tm_sec);
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
 	g_free(ptr);
@@ -163,6 +173,8 @@ GSList *DynamicPhrase::GetTimePhrase(guint *len)
  */
 GSList *DynamicPhrase::GetWeekPhrase(guint *len)
 {
+	ParseString parse;
+	CharsIndex chidx[2];
 	PhraseData *phrdt;
 	GSList *phrlist;
 	gchar *ptr;
@@ -170,10 +182,13 @@ GSList *DynamicPhrase::GetWeekPhrase(guint *len)
 	struct tm *tm;
 	time_t tt;
 
+	/* 预备工作 */
+	chidx[0].major = parse.GetStringIndex("x");
+	chidx[1].major = parse.GetStringIndex("q");
+	*len = 0;
+	phrlist = NULL;
 	time(&tt);
 	tm = localtime(&tt);
-	phrlist = NULL;
-	*len = 0;
 
 	/* 获取数字的汉字表示 */
 	tstr = NULL;
@@ -189,9 +204,10 @@ GSList *DynamicPhrase::GetWeekPhrase(guint *len)
 
 	/* 星期一 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("星期%s", tstr ? tstr : "");
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
 	g_free(ptr);
@@ -200,9 +216,10 @@ GSList *DynamicPhrase::GetWeekPhrase(guint *len)
 
 	/* 礼拜一 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("礼拜%s", tstr ? tstr : "");
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
 	g_free(ptr);
@@ -211,9 +228,10 @@ GSList *DynamicPhrase::GetWeekPhrase(guint *len)
 
 	/* 周一 */
 	phrdt = new PhraseData;
-	phrdt->chidx = chidx;
-	phrdt->chlen = 2;
-	phrdt->offset = 0;
+	phrdt->chidx = new CharsIndex[G_N_ELEMENTS(chidx)];
+	memcpy(phrdt->chidx, chidx, sizeof(chidx));
+	phrdt->chlen = G_N_ELEMENTS(chidx);
+	phrdt->offset = 0;	//标记这是无效词汇
 	ptr = g_strdup_printf("周%s", tstr ? tstr : "");
 	phrdt->data = g_utf8_to_utf16(ptr, strlen(ptr), NULL, &phrdt->dtlen, NULL);
 	g_free(ptr);

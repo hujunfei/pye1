@@ -25,8 +25,6 @@ private:
 	GSList *GetDatePhrase(guint *len);
 	GSList *GetTimePhrase(guint *len);
 	GSList *GetWeekPhrase(guint *len);
-
-	static CharsIndex chidx[];	///< 应需而生
 };
 
 #endif

@@ -172,8 +172,8 @@ PhraseData *InquireUserPhrase::AnalysisPhraseIndex(const PhraseIndex *phridx)
 	PhraseData *phrdt;
 
 	phrdt = new PhraseData;
-	phrdt->chidx = (CharsIndex *)g_memdup(phridx->chidx, sizeof(CharsIndex) *
-								 phridx->chlen);
+	phrdt->chidx = new CharsIndex[phridx->chlen];
+	memcpy(phrdt->chidx, phridx->chidx, sizeof(CharsIndex) * phridx->chlen);
 	phrdt->chlen = phridx->chlen;
 	phrdt->offset = phridx->offset;
 	lseek(root.fd, phrdt->offset, SEEK_SET);

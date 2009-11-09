@@ -73,7 +73,8 @@ public:
 	void SyncEngineUnitData(GSList **euphrlist, time_t stamp) const;
 	void DeletePhraseData(const PhraseData *phrdt) const;
 	void FeedbackPhraseData(const PhraseData *phrdt) const;
-	GSList *InquirePhraseIndex(const CharsIndex *chidx, int chlen) const;
+	GSList *InquireMatchPhraseIndex(const CharsIndex *chidx, int chlen) const;
+	EunitPhrase *InquirePerferPhraseIndex(const CharsIndex *chidx, int chlen) const;
 	GArray *GetRectifyTable() const;
 private:
 	bool BreakMbfileString(char *lineptr, const char **mfile, const char **priority);

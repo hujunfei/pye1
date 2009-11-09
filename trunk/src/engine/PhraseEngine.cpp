@@ -114,7 +114,7 @@ void PhraseEngine::CreateSysEngineUnits(const char *sys)
 		path = g_strdup_printf("%s/%s", dirname, file);
 		eu = CreateEngineUnit(path, atoi(priority), SYSTEM_TYPE);
 		g_free(path);
-		eulist = g_slist_prepend(eulist, eu);	//减少时间开支
+		eulist = g_slist_prepend(eulist, eu);
 	}
 	g_free(dirname);
 	free(lineptr);
@@ -295,12 +295,12 @@ void PhraseEngine::FeedbackPhraseData(const PhraseData *phrdt) const
 }
 
 /**
- * 查询词语索引.
+ * 查询匹配的词语索引.
  * @param chidx 汉字索引数组
  * @param chlen 汉字索引数组有效长度
  * @return 引擎单元词语索引缓冲点链表
  */
-GSList *PhraseEngine::InquirePhraseIndex(const CharsIndex *chidx, int chlen) const
+GSList *PhraseEngine::InquireMatchPhraseIndex(const CharsIndex *chidx, int chlen) const
 {
 	GSList *tlist, *euphrlist;
 	EunitPhrase *euphr;
@@ -313,11 +313,60 @@ GSList *PhraseEngine::InquirePhraseIndex(const CharsIndex *chidx, int chlen) con
 		euphr = new EunitPhrase;
 		euphr->eunit = eu;
 		euphr->phrlist = eu->inqphr->SearchMatchPhrase(chidx, chlen);
-		euphrlist = g_slist_prepend(euphrlist, euphr);	//减少时间开支
+		euphrlist = g_slist_prepend(euphrlist, euphr);
 		tlist = g_slist_next(tlist);
 	}
 
 	return euphrlist;
+}
+
+/**
+ * 查询首选的词语索引.
+ * @param chidx 汉字索引数组
+ * @param chlen 汉字索引数组有效长度
+ * @return 词语索引
+ */
+EunitPhrase *PhraseEngine::InquirePerferPhraseIndex(const CharsIndex *chidx,
+							 int chlen) const
+{
+	GSList *tlist;
+	EunitPhrase *euphr;
+	EngineUnit *eu, *teu;
+	PhraseIndex *phridx, *tphridx;
+
+	/* 初始化 */
+	euphr = NULL;
+	eu = NULL;
+	phridx = NULL;
+
+	/* 查询最佳的词语索引 */
+	tlist = eulist;
+	while (tlist) {
+		teu = (EngineUnit *)tlist->data;
+		tphridx = teu->inqphr->SearchPreferPhrase(chidx, chlen);
+		if (phridx && tphridx) {
+			if (phridx->chlen < tphridx->chlen
+				 || (phridx->chlen == tphridx->chlen
+					 && eu->priority < teu->priority)) {
+				delete phridx;
+				phridx = tphridx;
+				eu = teu;
+			}
+		} else if (!phridx && tphridx) {
+			phridx = tphridx;
+			eu = teu;
+		}
+		tlist = g_slist_next(tlist);
+	}
+
+	/* 准备返回数据 */
+	if (eu && phridx) {
+		euphr = new EunitPhrase;
+		euphr->eunit = eu;
+		euphr->phrlist = g_slist_prepend(euphr->phrlist, phridx);
+	}
+
+	return euphr;
 }
 
 /**
