@@ -1,1 +1,34 @@
-= pinyin user guide - Chinese version =
+#summary ibus-pye user guide - Chinese version
+= 拼音输入简介 =
+本拼音输入法，是基于ibus平台，使用pye引擎开发的拼音输入法。 
+= 输入法上手指南 =
+== 怎样安装？ ==
+=== 从SVN版安装 ===
+{{{
+$ svn checkout http://pye1.googlecode.com/svn/branches/ibus/ ibus-read-only
+
+$ mkdir ibus-make
+
+$ cd ibus-make
+
+$ ../ibus-read-only/configure
+
+$ make
+
+$ sudo make install
+}}}
+=== 稳定版安装 ===
+{{{
+$ wget http://pye1.googlecode.com/files/ibus-pye-0.x.x.tar.bz2
+
+$ tar jxvf ibus-pye-0.x.x.tar.bz2
+
+$ cd ibus-pye-0.x.x
+
+$ ./configure
+
+$ make
+
+$ sudo make install
+}}}
+== 使用方法 ==
