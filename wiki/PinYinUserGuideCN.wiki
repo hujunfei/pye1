@@ -31,4 +31,25 @@ $ make
 
 $ sudo make install
 }}}
-== 使用方法 ==
+== 注意事项 ==
+  * 本输入法没有自带任何词库，所以刚安装后调用本输入法进行汉字输入，将不能获取数据，效果如下：
+http://pye1.googlecode.com/svn/images/s1.png
+当然了，不依赖于词库的数据还是能够被获取的，如输入"sj","rq","lb"等。
+    === 安装词库 ===
+      # 获取词库，可以从[http://code.google.com/p/open-phrase/ open-phrase]项目下载词库；
+      # 创建码表，利用程序自带的工具 *pyeCreateMB* 将词库生成pye能够使用的码表，
+词库格式为: 词语 拼音 热门度，例如: 岳 yue 2634，
+鉴于[http://code.google.com/p/open-phrase/ open-phrase]的多音字词库有部分错误，所以本工具在进行转换时会出现段错误，删除其中错误部分即可；
+      # 安装码表，将生成的码表拷贝到 *PREFIX/share/ibus-pye/data/* 目录下；
+      # 修改配置文件，为了让pye挂载上此码表，我们还需要修改配置文件 *PREFIX/share/ibus-pye/data/config.txt*，将此码表按照配置文件要求的格式加入；
+      # 重启ibus，希望你能够使用上！
+== 效果 ==
+  * 常规词语
+http://pye1.googlecode.com/svn/images/s2.png
+  * 大词库的好处
+http://pye1.googlecode.com/svn/images/s3.png
+没用到任何智能算法，它也能够很好的输入短语
+  * 动态词语
+http://pye1.googlecode.com/svn/images/s4.png
+  * 模糊拼音
+http://pye1.googlecode.com/svn/images/s5.png
