@@ -41,6 +41,7 @@ http://pye1.googlecode.com/svn/images/s1.png
       # 安装码表，将生成的码表拷贝到 *PREFIX/share/ibus-pye/data/* 目录下；
       # 修改配置文件，为了让pye挂载上此码表，我们还需要修改配置文件 *PREFIX/share/ibus-pye/data/config.txt *，将此码表按照配置文件要求的格式加入；
       # 重启ibus，希望你能够使用上！
+  * 如果ibus平台来自于发行版，那么它一般被安装在 */usr *目录下，所以编译配置本程序时应该使用命令：*configure --prefix=/usr *，如果是源码安装，则无须变更。总之，目的就是一个，ibus-pye应该与ibus安装在同一目录下。
 == 效果 ==
   * 常规词语
 http://pye1.googlecode.com/svn/images/s2.png
