@@ -678,11 +678,11 @@ gboolean PinyinEngine::ProcessPunct(guint keyval, guint keycode, guint state)
 			CommitStaticString("、");
 			break;
 		case '\'':
-			CommitStaticString(squote ? "‘" : "’");
+			CommitStaticString(squote ? "’" : "‘");
 			squote = !squote;
 			break;
 		case '"':
-			CommitStaticString(dquote ? "“" : "”");
+			CommitStaticString(dquote ? "”" : "“");
 			dquote = !dquote;
 			break;
 		case '.':
