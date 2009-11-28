@@ -6032,7 +6032,7 @@ else
 $as_echo "yes" >&6; }
 	:
 fi
-ibus_modules="ibus-1.0 >= 1.0.0"
+ibus_modules="ibus-1.0 >= 1.2.0"
 
 pkg_failed=no
 { $as_echo "$as_me:$LINENO: checking for IBUS" >&5

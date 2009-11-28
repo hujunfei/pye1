@@ -96,20 +96,20 @@ static void init_phrase_engine()
 	phregn.CreateUserEngineUnit(path);
 
 	/* 模糊拼音 */
-	phregn.AddFuzzyPinyinUnit("z", "zh");
-	phregn.AddFuzzyPinyinUnit("c", "ch");
-	phregn.AddFuzzyPinyinUnit("s", "sh");
+// 	phregn.AddFuzzyPinyinUnit("z", "zh");
+// 	phregn.AddFuzzyPinyinUnit("c", "ch");
+// 	phregn.AddFuzzyPinyinUnit("s", "sh");
 // 	phregn.AddFuzzyPinyinUnit("an", "ang");
 // 	phregn.AddFuzzyPinyinUnit("on", "ong");
-	phregn.AddFuzzyPinyinUnit("en", "eng");
-	phregn.AddFuzzyPinyinUnit("in", "ing");
-	phregn.AddFuzzyPinyinUnit("eng", "ong");
-	phregn.AddFuzzyPinyinUnit("ian", "iang");
-	phregn.AddFuzzyPinyinUnit("uan", "uang");
-	phregn.AddFuzzyPinyinUnit("l", "n");
-	phregn.AddFuzzyPinyinUnit("f", "h");
+// 	phregn.AddFuzzyPinyinUnit("en", "eng");
+// 	phregn.AddFuzzyPinyinUnit("in", "ing");
+// 	phregn.AddFuzzyPinyinUnit("eng", "ong");
+// 	phregn.AddFuzzyPinyinUnit("ian", "iang");
+// 	phregn.AddFuzzyPinyinUnit("uan", "uang");
+// 	phregn.AddFuzzyPinyinUnit("l", "n");
+// 	phregn.AddFuzzyPinyinUnit("f", "h");
 // 	phregn.AddFuzzyPinyinUnit("r", "l");
-	phregn.AddFuzzyPinyinUnit("k", "g");
+// 	phregn.AddFuzzyPinyinUnit("k", "g");
 	/* 自动纠错 */
 	phregn.AddRectifyPinyinPair("ign", "ing");
 	phregn.AddRectifyPinyinPair("img", "ing");
