@@ -23,7 +23,7 @@ UserPhraseInfo::~UserPhraseInfo()
 UserCharsLengthPoint::UserCharsLengthPoint():childrens(0), chidx(NULL),
  phrinf(NULL)
 {}
- UserCharsLengthPoint::~UserCharsLengthPoint()
+UserCharsLengthPoint::~UserCharsLengthPoint()
 {
 	delete [] chidx;
 	delete [] phrinf;
