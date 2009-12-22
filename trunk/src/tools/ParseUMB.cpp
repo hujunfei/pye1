@@ -165,7 +165,7 @@ void ParseUMB::WritePhraseIndexTree(FILE *stream, int length, bool reset)
 			idxcnt++;
 			continue;
 		}
-		lencnt = length;	//小于此长度的词语将被忽略
+		lencnt = length > 0 ? length : 1;	//小于此长度的词语将被忽略
 		while (lencnt <= indexp->indexs) {
 			if (!(lengthp = indexp->table + lencnt - 1)) {
 				lencnt++;
