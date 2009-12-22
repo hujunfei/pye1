@@ -105,7 +105,7 @@ void CreateMB::WritePhraseIndex(const char *tfile)
 	para.eleaves = 0;
 	g_node_traverse(root, G_PRE_ORDER, G_TRAVERSE_ALL, -1,
 		 GNodeTraverseFunc(WritePinyinMBIndex), &para);
-	para.eoffset = lseek(fd, 0, SEEK_CUR) + sizeof(para.eoffset) * para.eleaves;
+	para.eoffset = lseek(fd, 0, SEEK_CUR) + sizeof(para.eoffset) * para.eleaves;	//计算数据部分起始偏移量
 	g_node_traverse(root, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
 			 GNodeTraverseFunc(WritePinyinMBDtidx), &para);
 	g_node_traverse(root, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
@@ -277,16 +277,6 @@ gboolean CreateMB::WritePinyinMBIndex(GNode *node, TravTreePara *para)
 		/* 写出本节点所包含的汉字索引数组 */
 		phrdt = (PhraseDatum *)node->data;
 		xwrite(para->fd, phrdt->chidx, sizeof(CharsIndex) * phrdt->chlen);
-		/* 标识本索引值的结束点 */
-		if (!g_node_next_sibling(node) && !g_node_next_sibling(node->parent)) {
-			length = 0;
-			xwrite(para->fd, &length, sizeof(length));
-			/* 标识本索引树的结束点 */
-			if (!g_node_next_sibling(node->parent->parent)) {
-				index = -1;
-				xwrite(para->fd, &index, sizeof(index));
-			}
-		}
 		/* 增加叶子数 */
 		(para->eleaves)++;
 		break;
@@ -309,7 +299,8 @@ gboolean CreateMB::WritePinyinMBDtidx(GNode *node, TravTreePara *para)
 
 	phrdt = (PhraseDatum *)node->data;
 	xwrite(para->fd, &para->eoffset, sizeof(para->eoffset));
-	para->eoffset += sizeof(phrdt->dtlen) + sizeof(gunichar2) * phrdt->dtlen;
+	para->eoffset += sizeof(phrdt->freq) + sizeof(phrdt->dtlen) +
+				 sizeof(gunichar2) * phrdt->dtlen;
 
 	return FALSE;
 }
@@ -325,6 +316,7 @@ gboolean CreateMB::WritePinyinMBData(GNode *node, int fd)
 	PhraseDatum *phrdt;
 
 	phrdt = (PhraseDatum *)node->data;
+	xwrite(fd, &phrdt->freq, sizeof(phrdt->freq));
 	xwrite(fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
 	xwrite(fd, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
 

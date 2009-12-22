@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	}
 	sfile = argv[optind];
 	if (!dfile)
-		dfile = "pinyin.mb";
+		dfile = "phrase.mb";
 
 	cmb.CreatePhraseIndex(sfile);
 	cmb.WritePhraseIndex(dfile);
