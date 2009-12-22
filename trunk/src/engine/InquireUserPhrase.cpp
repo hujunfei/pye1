@@ -20,13 +20,13 @@ UserPhraseInfo::UserPhraseInfo():offset(0), freq(0)
 {}
 UserPhraseInfo::~UserPhraseInfo()
 {}
-UserCharsLengthPoint::UserCharsLengthPoint():indexs(0), chidx(NULL),
- table(NULL)
+UserCharsLengthPoint::UserCharsLengthPoint():childrens(0), chidx(NULL),
+ phrinf(NULL)
 {}
  UserCharsLengthPoint::~UserCharsLengthPoint()
 {
 	delete [] chidx;
-	delete [] table;
+	delete [] phrinf;
 }
 UserCharsIndexPoint::UserCharsIndexPoint():indexs(0), table(NULL)
 {}
@@ -228,40 +228,40 @@ void InquireUserPhrase::InsertPhraseToTree(const PhraseData *phrdt)
 
 	/* 定位词语位置 */
 	number = 0;
-	while (number < lengthp->indexs) {
+	while (number < lengthp->childrens) {
 		/* 新插入的词语拥有更高优先级 */
-		if ((lengthp->table + number)->freq > 1)
+		if ((lengthp->phrinf + number)->freq > 1)
 			break;
 		number++;
 	}
 	/* 将词语的汉字索引数组添加到索引点下 */
 	chidx = lengthp->chidx;
-	lengthp->chidx = new CharsIndex[phrdt->chlen * (lengthp->indexs + 1)];
+	lengthp->chidx = new CharsIndex[phrdt->chlen * (lengthp->childrens + 1)];
 	if (number != 0)
 		memcpy(lengthp->chidx, chidx, sizeof(CharsIndex) * phrdt->chlen * number);
 	memcpy(lengthp->chidx + phrdt->chlen * number, phrdt->chidx,
 				 sizeof(CharsIndex) * phrdt->chlen);
-	if (number != lengthp->indexs)
+	if (number != lengthp->childrens)
 		memcpy(lengthp->chidx + phrdt->chlen * (number + 1),
 				 chidx + phrdt->chlen * number,
 				 sizeof(CharsIndex) * phrdt->chlen *
-					 (lengthp->indexs - number));
+					 (lengthp->childrens - number));
 	if (chidx)
 		delete [] chidx;
 	/* 将词语的相关信息添加到索引点下 */
-	phrinf = lengthp->table;
-	lengthp->table = new UserPhraseInfo[lengthp->indexs + 1];
+	phrinf = lengthp->phrinf;
+	lengthp->phrinf = new UserPhraseInfo[lengthp->childrens + 1];
 	if (number != 0)
-		memcpy(lengthp->table, phrinf, sizeof(UserPhraseInfo) * number);
-	(lengthp->table + number)->offset = root.offset;
-	(lengthp->table + number)->freq = 1;	//预设新词语使用频率为1
-	if (number != lengthp->indexs)
-		memcpy(lengthp->table + number + 1, phrinf + number,
-			 sizeof(UserPhraseInfo) * (lengthp->indexs - number));
+		memcpy(lengthp->phrinf, phrinf, sizeof(UserPhraseInfo) * number);
+	(lengthp->phrinf + number)->offset = root.offset;
+	(lengthp->phrinf + number)->freq = 1;	//预设新词语使用频率为1
+	if (number != lengthp->childrens)
+		memcpy(lengthp->phrinf + number + 1, phrinf + number,
+			 sizeof(UserPhraseInfo) * (lengthp->childrens - number));
 	if (phrinf)
 		delete [] phrinf;
 	/* 更新数据 */
-	(lengthp->indexs)++;
+	(lengthp->childrens)++;
 	lseek(root.fd, root.offset, SEEK_SET);
 	xwrite(root.fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
 	xwrite(root.fd, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
@@ -288,26 +288,26 @@ void InquireUserPhrase::DeletePhraseFromTree(const PhraseData *phrdt)
 
 	/* 定位词语所在位置 */
 	number = 0;
-	while (number < lengthp->indexs) {
-		if ((lengthp->table + number)->offset == phrdt->offset)
+	while (number < lengthp->childrens) {
+		if ((lengthp->phrinf + number)->offset == phrdt->offset)
 			break;
 		number++;
 	}
-	if (number == lengthp->indexs)
+	if (number == lengthp->childrens)
 		return;
 
 	/* 移动数据 */
-	if (number + 1 != lengthp->indexs) {
+	if (number + 1 != lengthp->childrens) {
 		memmove(lengthp->chidx + phrdt->chlen * number,
 			 lengthp->chidx + phrdt->chlen * (number + 1),
 			 sizeof(CharsIndex) * phrdt->chlen *
-				 (lengthp->indexs - number - 1));
-		memmove(lengthp->table + number, lengthp->table + number + 1,
-			 sizeof(UserPhraseInfo) * (lengthp->indexs - number - 1));
+				 (lengthp->childrens - number - 1));
+		memmove(lengthp->phrinf + number, lengthp->phrinf + number + 1,
+			 sizeof(UserPhraseInfo) * (lengthp->childrens - number - 1));
 	}
 
 	/* 更新数据 */
-	(lengthp->indexs)--;
+	(lengthp->childrens)--;
 }
 
 /**
@@ -331,21 +331,21 @@ void InquireUserPhrase::IncreasePhraseFreq(const PhraseData *phrdt)
 
 	/* 定位词语此刻所在位置 */
 	number = 0;
-	while (number < lengthp->indexs) {
-		if ((lengthp->table + number)->offset == phrdt->offset) {
-			((lengthp->table + number)->freq)++;
+	while (number < lengthp->childrens) {
+		if ((lengthp->phrinf + number)->offset == phrdt->offset) {
+			((lengthp->phrinf + number)->freq)++;
 			break;
 		}
 		number++;
 	}
-	if (number == lengthp->indexs)
+	if (number == lengthp->childrens)
 		return;
 
 	/* 查询新位置 */
 	position = number + 1;
-	while (position < lengthp->indexs) {
+	while (position < lengthp->childrens) {
 		/* 最近选中的词语拥有更高优先级 */
-		if ((lengthp->table + position)->freq > (lengthp->table + number)->freq)
+		if ((lengthp->phrinf + position)->freq > (lengthp->phrinf + number)->freq)
 			break;
 		position++;
 	}
@@ -358,10 +358,10 @@ void InquireUserPhrase::IncreasePhraseFreq(const PhraseData *phrdt)
 		 sizeof(CharsIndex) * phrdt->chlen * (position - number - 1));
 	memcpy(lengthp->chidx + phrdt->chlen * (position - 1), phrdt->chidx,
 					 sizeof(CharsIndex) * phrdt->chlen);
-	phrinf = *(lengthp->table + number);
-	memmove(lengthp->table + number, lengthp->table + number + 1,
+	phrinf = *(lengthp->phrinf + number);
+	memmove(lengthp->phrinf + number, lengthp->phrinf + number + 1,
 		 sizeof(UserPhraseInfo) * (position - number - 1));
-	*(lengthp->table + position - 1) = phrinf;
+	*(lengthp->phrinf + position - 1) = phrinf;
 }
 
 /**
@@ -396,15 +396,15 @@ void InquireUserPhrase::WritePhraseIndexTree()
 		length = 1;
 		while (length <= indexp->indexs) {
 			lengthp = indexp->table + length - 1;
-			if (lengthp->indexs == 0) {
+			if (lengthp->childrens == 0) {
 				length++;
 				continue;
 			}
 			/* 写出汉字索引&词语信息的数据 */
 			xwrite(root.fd, lengthp->chidx, sizeof(CharsIndex) * length *
-								 lengthp->indexs);
-			xwrite(root.fd, lengthp->table, sizeof(UserPhraseInfo) *
-								 lengthp->indexs);
+								 lengthp->childrens);
+			xwrite(root.fd, lengthp->phrinf, sizeof(UserPhraseInfo) *
+							 lengthp->childrens);
 			length++;
 		}
 		index++;
@@ -458,17 +458,17 @@ void InquireUserPhrase::ReadPhraseIndexTree()
 		length = 1;
 		while (length <= indexp->indexs) {
 			lengthp = indexp->table + length - 1;
-			if (lengthp->indexs == 0) {
+			if (lengthp->childrens == 0) {
 				length++;
 				continue;
 			}
 			/* 读取汉字索引&词语信息的数据 */
-			lengthp->chidx = new CharsIndex[length * lengthp->indexs];
+			lengthp->chidx = new CharsIndex[length * lengthp->childrens];
 			xread(root.fd, lengthp->chidx, sizeof(CharsIndex) * length *
-								 lengthp->indexs);
-			lengthp->table = new UserPhraseInfo[lengthp->indexs];
-			xread(root.fd, lengthp->table, sizeof(UserPhraseInfo) *
-								 lengthp->indexs);
+								 lengthp->childrens);
+			lengthp->phrinf = new UserPhraseInfo[lengthp->childrens];
+			xread(root.fd, lengthp->phrinf, sizeof(UserPhraseInfo) *
+							 lengthp->childrens);
 			length++;
 		}
 		index++;
@@ -505,14 +505,14 @@ GSList *InquireUserPhrase::SearchIndexMatchPhrase(int8_t index,
 	while (length <= indexp->indexs && length <= len) {
 		lengthp = indexp->table + length - 1;
 		number = 0;
-		while (number < lengthp->indexs) {
+		while (number < lengthp->childrens) {
 			if (MatchCharsIndex(lengthp->chidx + length * number,
 							 chidx, length)) {
 				phridx = new PhraseIndex;
 				phridx->chidx = lengthp->chidx + length * number;
 				phridx->chlen = length;
-				phridx->offset = (lengthp->table + number)->offset;
-				phridx->freq = (lengthp->table + number)->freq;
+				phridx->offset = (lengthp->phrinf + number)->offset;
+				phridx->freq = (lengthp->phrinf + number)->freq;
 				list = g_slist_prepend(list, phridx);
 			}
 			number++;
@@ -551,7 +551,7 @@ PhraseIndex *InquireUserPhrase::SearchIndexPreferPhrase(int8_t index,
 	length = len < indexp->indexs ? len : indexp->indexs;
 	while (length >= 1) {
 		lengthp = indexp->table + length - 1;
-		number = lengthp->indexs;
+		number = lengthp->childrens;
 		while (number >= 1) {
 			number--;
 			if (MatchCharsIndex(lengthp->chidx + length * number,
@@ -559,8 +559,8 @@ PhraseIndex *InquireUserPhrase::SearchIndexPreferPhrase(int8_t index,
 				phridx = new PhraseIndex;
 				phridx->chidx = lengthp->chidx + length * number;
 				phridx->chlen = length;
-				phridx->offset = (lengthp->table + number)->offset;
-				phridx->freq = (lengthp->table + number)->freq;
+				phridx->offset = (lengthp->phrinf + number)->offset;
+				phridx->freq = (lengthp->phrinf + number)->freq;
 				break;
 			}
 		}

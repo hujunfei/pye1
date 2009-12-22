@@ -33,9 +33,9 @@ public:
 	UserCharsLengthPoint();
 	~UserCharsLengthPoint();
 
-	guint indexs;		///< 此索引点下的总索引量
+	guint childrens;		///< 此索引点下的总索引量
 	CharsIndex *chidx;	///< 汉字索引数组索引表
-	UserPhraseInfo *table;	///< 词语信息表
+	UserPhraseInfo *phrinf;	///< 词语信息表
 };
 /**
  * 按汉字索引值分类的索引点.

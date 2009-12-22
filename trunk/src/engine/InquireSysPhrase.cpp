@@ -17,7 +17,7 @@
  * @name 相关底层数据的构造函数&析构函数.
  * @{
  */
-SysCharsLengthPoint::SysCharsLengthPoint():indexs(0), chidx(NULL),
+SysCharsLengthPoint::SysCharsLengthPoint():childrens(0), chidx(NULL),
  offset(0)
 {}
 SysCharsLengthPoint::~SysCharsLengthPoint()
@@ -214,14 +214,14 @@ void InquireSysPhrase::ReadPhraseIndexTree()
 			if (length == 0)
 				break;
 			lengthp = indexp->table + length - 1;
-			xread(root.fd, &lengthp->indexs, sizeof(lengthp->indexs));
-			lengthp->chidx = new CharsIndex[length * lengthp->indexs];
+			xread(root.fd, &lengthp->childrens, sizeof(lengthp->childrens));
+			lengthp->chidx = new CharsIndex[length * lengthp->childrens];
 			lengthp->offset = offset;
 			/* 读取汉字索引的数据 */
 			xread(root.fd, lengthp->chidx, sizeof(CharsIndex) * length *
-								 lengthp->indexs);
+								 lengthp->childrens);
 			/* 修正相对偏移量 */
-			offset += sizeof(off_t) * lengthp->indexs;
+			offset += sizeof(off_t) * lengthp->childrens;
 		}
 	}
 
@@ -259,7 +259,7 @@ GSList *InquireSysPhrase::SearchIndexMatchPhrase(int8_t index,
 	while (length <= indexp->indexs && length <= len) {
 		lengthp = indexp->table + length - 1;
 		number = 0;
-		while (number < lengthp->indexs) {
+		while (number < lengthp->childrens) {
 			if (MatchCharsIndex(lengthp->chidx + length * number,
 							 chidx, length)) {
 				phridx = new PhraseIndex;
@@ -306,7 +306,7 @@ PhraseIndex *InquireSysPhrase::SearchIndexPreferPhrase(int8_t index,
 	length = len < indexp->indexs ? len : indexp->indexs;
 	while (length >= 1) {
 		lengthp = indexp->table + length - 1;
-		number = lengthp->indexs;
+		number = lengthp->childrens;
 		while (number >= 1) {
 			number--;
 			if (MatchCharsIndex(lengthp->chidx + length * number,

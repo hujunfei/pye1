@@ -22,9 +22,9 @@ public:
 	SysCharsLengthPoint();
 	~SysCharsLengthPoint();
 
-	guint indexs;		///< 此索引点下的总索引量
+	guint childrens;		///< 此索引点下的总索引量
 	CharsIndex *chidx;	///< 汉字索引数组索引表
-	off_t offset;		///< 本部分数据索引的相对偏移量
+	off_t offset;		///< 本部分数据索引相对数据索引部分的偏移量
 };
 /**
  * 按汉字索引值分类的索引点.
@@ -48,7 +48,7 @@ public:
 	int8_t indexs;		///< 此索引点下的总索引量
 	SysCharsIndexPoint *table;	///< 按汉字索引值分类的索引点数组索引表
 	int fd;			///< 词语数据文件描述符
-	off_t offset;		///< 数据部分的绝对偏移量
+	off_t offset;		///< 数据索引部分的绝对偏移量
 };
 
 /**
