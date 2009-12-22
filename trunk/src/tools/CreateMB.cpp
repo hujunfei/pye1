@@ -299,8 +299,7 @@ gboolean CreateMB::WritePinyinMBDtidx(GNode *node, TravTreePara *para)
 
 	phrdt = (PhraseDatum *)node->data;
 	xwrite(para->fd, &para->eoffset, sizeof(para->eoffset));
-	para->eoffset += sizeof(phrdt->freq) + sizeof(phrdt->dtlen) +
-				 sizeof(gunichar2) * phrdt->dtlen;
+	para->eoffset += sizeof(phrdt->dtlen) + sizeof(gunichar2) * phrdt->dtlen;
 
 	return FALSE;
 }
@@ -316,7 +315,6 @@ gboolean CreateMB::WritePinyinMBData(GNode *node, int fd)
 	PhraseDatum *phrdt;
 
 	phrdt = (PhraseDatum *)node->data;
-	xwrite(fd, &phrdt->freq, sizeof(phrdt->freq));
 	xwrite(fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
 	xwrite(fd, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
 
