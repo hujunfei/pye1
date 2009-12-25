@@ -1,5 +1,5 @@
 //
-// C++ Implementation: CreateMB
+// C++ Implementation: CreateUMB
 //
 // Description:
 //
@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "CreateMB.h"
+#include "CreateUMB.h"
 #include "../engine/ParseString.h"
 #include "../utils/output.h"
 #include "../utils/wrapper.h"
@@ -26,35 +26,51 @@ PhraseDatum::~PhraseDatum()
 	delete [] chidx;
 	g_free(data);
 }
-TravTreePara::TravTreePara():fd(-1)
+UserPhraseInfo::UserPhraseInfo():offset(0), freq(0)
 {}
-TravTreePara::~TravTreePara()
+UserPhraseInfo::~UserPhraseInfo()
 {}
+UserCharsLengthPoint::UserCharsLengthPoint():childrens(0), chidx(NULL),
+ phrinf(NULL)
+{}
+UserCharsLengthPoint::~UserCharsLengthPoint()
+{
+	delete [] chidx;
+	delete [] phrinf;
+}
+UserCharsIndexPoint::UserCharsIndexPoint():indexs(0), table(NULL)
+{}
+UserCharsIndexPoint::~UserCharsIndexPoint()
+{
+	delete [] table;
+}
+UserRootIndexPoint::UserRootIndexPoint():indexs(0), table(NULL),
+ fd(-1), offset(0)
+{}
+UserRootIndexPoint::~UserRootIndexPoint()
+{
+	delete [] table;
+	close(fd);
+}
 /** @} */
 
-/**
- * 类构造函数.
- */
-CreateMB::CreateMB()
+CreateUMB::CreateUMB()
 {
-	root = g_node_new(NULL);
+	rnode = g_node_new(NULL);
 }
 
-/**
- * 类析构函数.
- */
-CreateMB::~CreateMB()
+CreateUMB::~CreateUMB()
 {
-	g_node_traverse(root, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
+	g_node_traverse(rnode, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
 			 GNodeTraverseFunc(DeletePhraseDatum), NULL);
-	g_node_destroy(root);
+	g_node_destroy(rnode);
 }
 
 /**
  * 根据sfile源文件的数据创建词语索引树.
  * @param sfile 源文件
  */
-void CreateMB::CreateIndexTree(const char *sfile)
+void CreateUMB::CreateIndexTree(const char *sfile)
 {
 	FILE *stream;
 	PhraseDatum *phrdt;
@@ -90,31 +106,26 @@ void CreateMB::CreateIndexTree(const char *sfile)
  * 写出词语的索引和数据，即创建码表文件.
  * @param tfile 目标文件
  */
-void CreateMB::WriteIndexTree(const char *tfile)
+void CreateUMB::WriteIndexTree(const char *tfile)
 {
-	TravTreePara para;
-	int fd;
-
 	/* 创建目标文件 */
-	if ((fd = open(tfile, O_WRONLY | O_CREAT | O_EXCL, 00644)) == -1)
+	if ((root.fd = open(tfile, O_WRONLY | O_CREAT | O_EXCL, 00644)) == -1)
 		errx(1, "Open file \"%s\" failed, %s", tfile, strerror(errno));
 
-	/* 写出索引&数据索引&数据 */
-	pmessage("Writing Phrase file ...\n");
-	para.fd = fd;
-	para.eleaves = 0;
-	g_node_traverse(root, G_PRE_ORDER, G_TRAVERSE_ALL, -1,
-		 GNodeTraverseFunc(WritePinyinMBIndex), &para);
-	//计算数据部分起始偏移量
-	para.eoffset = lseek(fd, 0, SEEK_CUR) + sizeof(para.eoffset) * para.eleaves;
-	g_node_traverse(root, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
-			 GNodeTraverseFunc(WritePinyinMBDtidx), &para);
-	g_node_traverse(root, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
-				 GNodeTraverseFunc(WritePinyinMBData),
-				 GINT_TO_POINTER(fd));
+	/* 写出索引部分偏移量 */
+	xwrite(root.fd, &root.offset, sizeof(root.offset));
+	/* 写出码表数据部分 */
+	WritePinyinMBData();
+	/* 更新索引部分偏移量 */
+	root.offset = lseek(root.fd, 0, SEEK_CUR);
+	lseek(root.fd, 0, SEEK_SET);
+	xwrite(root.fd, &root.offset, sizeof(root.offset));
+	lseek(root.fd, 0, SEEK_END);
+	/* 写出码表索引部分 */
+	WritePinyinMBIndex();
 
 	/* 关闭目标文件 */
-	close(fd);
+	close(root.fd);
 }
 
 /**
@@ -125,7 +136,7 @@ void CreateMB::WriteIndexTree(const char *tfile)
  * @retval freq 频率串
  * @return 串是否合法
  */
-bool CreateMB::BreakPhraseString(char *lineptr, const char **phrase,
+bool CreateUMB::BreakPhraseString(char *lineptr, const char **phrase,
 			 const char **pinyin, const char **freq)
 {
 	char *ptr;
@@ -160,7 +171,7 @@ bool CreateMB::BreakPhraseString(char *lineptr, const char **phrase,
  * @param freq 频率串
  * @return 词语数据资料
  */
-PhraseDatum *CreateMB::CreatePhraseDatum(const char *phrase, const char *pinyin,
+PhraseDatum *CreateUMB::CreatePhraseDatum(const char *phrase, const char *pinyin,
 							 const char *freq)
 {
 	ParseString parse;
@@ -178,11 +189,11 @@ PhraseDatum *CreateMB::CreatePhraseDatum(const char *phrase, const char *pinyin,
  * 插入词语数据资料到树.
  * @param phrdt 词语数据资料
  */
-void CreateMB::InsertPhraseToTree(PhraseDatum *phrdt)
+void CreateUMB::InsertPhraseToTree(PhraseDatum *phrdt)
 {
 	GNode *parent, *tnode;
 
-	parent = SearchChildByCharsIndex(root, phrdt->chidx->major);
+	parent = SearchChildByCharsIndex(rnode, phrdt->chidx->major);
 	parent = SearchChildByCharsLength(parent, phrdt->chlen);
 
 	tnode = g_node_first_child(parent);
@@ -200,7 +211,7 @@ void CreateMB::InsertPhraseToTree(PhraseDatum *phrdt)
  * @param index 汉字索引值
  * @return 孩子节点
  */
-GNode *CreateMB::SearchChildByCharsIndex(GNode *parent, int8_t index)
+GNode *CreateUMB::SearchChildByCharsIndex(GNode *parent, int8_t index)
 {
 	GNode *tnode;
 
@@ -221,7 +232,7 @@ GNode *CreateMB::SearchChildByCharsIndex(GNode *parent, int8_t index)
  * @param len 汉字索引数组长度
  * @return 孩子节点
  */
-GNode *CreateMB::SearchChildByCharsLength(GNode *parent, int len)
+GNode *CreateUMB::SearchChildByCharsLength(GNode *parent, int len)
 {
 	GNode *tnode;
 
@@ -237,99 +248,58 @@ GNode *CreateMB::SearchChildByCharsLength(GNode *parent, int len)
 }
 
 /**
- * 写出拼音码表文件的索引部分.
- * @param node 树节点
- * @param para 参数
- * @return GLib库所需
+ * 写出拼音码表文件的数据部分.
  */
-gboolean CreateMB::WritePinyinMBIndex(GNode *node, TravTreePara *para)
+void CreateUMB::WritePinyinMBData()
 {
+
+}
+
+/**
+ * 写出拼音码表文件的索引部分.
+ */
+void CreateUMB::WritePinyinMBIndex()
+{
+	UserCharsIndexPoint *indexp;
+	UserCharsLengthPoint *lengthp;
 	int8_t index;
 	int length;
-	guint childrens;
-	PhraseDatum *phrdt;
-	GNode *tnode;
 
-	switch (g_node_depth(node)) {
-	case 1:
-		/* 写出本索引树的总索引量 */
-		tnode = g_node_last_child(node);
-		index = tnode ? GPOINTER_TO_INT(tnode->data) + 1 : 0;
-		xwrite(para->fd, &index, sizeof(index));
-		break;
-	case 2:
-		/* 写出本节点所代表的索引值 */
-		index = GPOINTER_TO_INT(node->data);
-		xwrite(para->fd, &index, sizeof(index));
-		/* 写出本节点下的总索引量 */
-		tnode = g_node_last_child(node);
-		length = tnode ? GPOINTER_TO_INT(tnode->data) : 0;
-		xwrite(para->fd, &length, sizeof(length));
-		break;
-	case 3:
-		/* 写出本节点所代表的词语长度 */
-		length = GPOINTER_TO_INT(node->data);
-		xwrite(para->fd, &length, sizeof(length));
-		/* 写出本节点下的总词语量 */
-		childrens = g_node_n_children(node);
-		xwrite(para->fd, &childrens, sizeof(childrens));
-		break;
-	case 4:
-		/* 写出本节点所包含的汉字索引数组 */
-		phrdt = (PhraseDatum *)node->data;
-		xwrite(para->fd, phrdt->chidx, sizeof(CharsIndex) * phrdt->chlen);
-		/* 标识本索引值的结束点 */
-		if (!g_node_next_sibling(node) && !g_node_next_sibling(node->parent)) {
-			length = 0;
-			xwrite(para->fd, &length, sizeof(length));
-			/* 标识本索引树的结束点 */
-			if (!g_node_next_sibling(node->parent->parent)) {
-				index = -1;
-				xwrite(para->fd, &index, sizeof(index));
-			}
+	/* 写出根索引点的数据 */
+	lseek(root.fd, 0, SEEK_SET);
+	xwrite(root.fd, &root.offset, sizeof(root.offset));
+	lseek(root.fd, root.offset, SEEK_SET);
+	xwrite(root.fd, &root.indexs, sizeof(root.indexs));
+	if (root.indexs == 0)
+		return;
+	/* 写出汉字索引值的索引数据 */
+	xwrite(root.fd, root.table, sizeof(UserCharsIndexPoint) * root.indexs);
+	index = 0;
+	while (index < root.indexs) {
+		indexp = root.table + index;
+		if (indexp->indexs == 0) {
+			index++;
+			continue;
 		}
-		/* 增加叶子数 */
-		(para->eleaves)++;
-		break;
-	default:
-		break;
+		/* 写出汉字索引数组长度的索引数据 */
+		xwrite(root.fd, indexp->table, sizeof(UserCharsLengthPoint) *
+							 indexp->indexs);
+		length = 1;
+		while (length <= indexp->indexs) {
+			lengthp = indexp->table + length - 1;
+			if (lengthp->childrens == 0) {
+				length++;
+				continue;
+			}
+			/* 写出汉字索引&词语信息的数据 */
+			xwrite(root.fd, lengthp->chidx, sizeof(CharsIndex) * length *
+								 lengthp->childrens);
+			xwrite(root.fd, lengthp->phrinf, sizeof(UserPhraseInfo) *
+							 lengthp->childrens);
+			length++;
+		}
+		index++;
 	}
-
-	return FALSE;
-}
-
-/**
- * 写出拼音码表文件的数据索引部分.
- * @param node 树节点
- * @param para 参数
- * @return GLib库所需
- */
-gboolean CreateMB::WritePinyinMBDtidx(GNode *node, TravTreePara *para)
-{
-	PhraseDatum *phrdt;
-
-	phrdt = (PhraseDatum *)node->data;
-	xwrite(para->fd, &para->eoffset, sizeof(para->eoffset));
-	para->eoffset += sizeof(phrdt->dtlen) + sizeof(gunichar2) * phrdt->dtlen;
-
-	return FALSE;
-}
-
-/**
- * 写出拼音码表文件的数据部分.
- * @param node 树节点
- * @param fd file descriptor
- * @return GLib库所需
- */
-gboolean CreateMB::WritePinyinMBData(GNode *node, int fd)
-{
-	PhraseDatum *phrdt;
-
-	phrdt = (PhraseDatum *)node->data;
-	xwrite(fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
-	xwrite(fd, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
-
-	return FALSE;
 }
 
 /**
@@ -337,7 +307,7 @@ gboolean CreateMB::WritePinyinMBData(GNode *node, int fd)
  * @param node 节点
  * @return GLib库所需
  */
-gboolean CreateMB::DeletePhraseDatum(GNode *node)
+gboolean CreateUMB::DeletePhraseDatum(GNode *node)
 {
 	delete (PhraseDatum *)node->data;
 	return FALSE;

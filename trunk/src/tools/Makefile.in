@@ -33,7 +33,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = pyeCreateMB$(EXEEXT) pyeParseUMB$(EXEEXT)
+bin_PROGRAMS = pyeCreateMB$(EXEEXT) pyeCreateUMB$(EXEEXT) \
+	pyeParseUMB$(EXEEXT)
 subdir = src/tools
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -52,6 +53,11 @@ pyeCreateMB_OBJECTS = $(am_pyeCreateMB_OBJECTS)
 pyeCreateMB_DEPENDENCIES = ../engine/libengine.a ../utils/libutils.a
 pyeCreateMB_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(pyeCreateMB_LDFLAGS) $(LDFLAGS) -o $@
+am_pyeCreateUMB_OBJECTS = CreateUMB.$(OBJEXT) pyeCreateUMB.$(OBJEXT)
+pyeCreateUMB_OBJECTS = $(am_pyeCreateUMB_OBJECTS)
+pyeCreateUMB_DEPENDENCIES = ../engine/libengine.a ../utils/libutils.a
+pyeCreateUMB_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(pyeCreateUMB_LDFLAGS) $(LDFLAGS) -o $@
 am_pyeParseUMB_OBJECTS = ParseUMB.$(OBJEXT) pyeParseUMB.$(OBJEXT)
 pyeParseUMB_OBJECTS = $(am_pyeParseUMB_OBJECTS)
 pyeParseUMB_DEPENDENCIES = ../engine/libengine.a ../utils/libutils.a
@@ -66,8 +72,10 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(pyeCreateMB_SOURCES) $(pyeParseUMB_SOURCES)
-DIST_SOURCES = $(pyeCreateMB_SOURCES) $(pyeParseUMB_SOURCES)
+SOURCES = $(pyeCreateMB_SOURCES) $(pyeCreateUMB_SOURCES) \
+	$(pyeParseUMB_SOURCES)
+DIST_SOURCES = $(pyeCreateMB_SOURCES) $(pyeCreateUMB_SOURCES) \
+	$(pyeParseUMB_SOURCES)
 HEADERS = $(noinst_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -170,6 +178,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 METASOURCES = AUTO
 pyeCreateMB_SOURCES = CreateMB.cpp pyeCreateMB.cpp
+pyeCreateUMB_SOURCES = CreateUMB.cpp pyeCreateUMB.cpp
 pyeParseUMB_SOURCES = ParseUMB.cpp pyeParseUMB.cpp
 AM_CXXFLAGS = -Wall
 
@@ -179,9 +188,11 @@ INCLUDES = $(all_includes) @PACKAGE_CFLAGS@
 # the library search path.
 pyeCreateMB_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
 pyeCreateMB_LDADD = $(INTLLIBS) ../engine/libengine.a ../utils/libutils.a
+pyeCreateUMB_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
+pyeCreateUMB_LDADD = $(INTLLIBS) ../engine/libengine.a ../utils/libutils.a
 pyeParseUMB_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
 pyeParseUMB_LDADD = $(INTLLIBS) ../engine/libengine.a ../utils/libutils.a
-noinst_HEADERS = CreateMB.h ParseUMB.h
+noinst_HEADERS = CreateMB.h CreateUMB.h ParseUMB.h
 all: all-am
 
 .SUFFIXES:
@@ -256,6 +267,9 @@ clean-binPROGRAMS:
 pyeCreateMB$(EXEEXT): $(pyeCreateMB_OBJECTS) $(pyeCreateMB_DEPENDENCIES) 
 	@rm -f pyeCreateMB$(EXEEXT)
 	$(pyeCreateMB_LINK) $(pyeCreateMB_OBJECTS) $(pyeCreateMB_LDADD) $(LIBS)
+pyeCreateUMB$(EXEEXT): $(pyeCreateUMB_OBJECTS) $(pyeCreateUMB_DEPENDENCIES) 
+	@rm -f pyeCreateUMB$(EXEEXT)
+	$(pyeCreateUMB_LINK) $(pyeCreateUMB_OBJECTS) $(pyeCreateUMB_LDADD) $(LIBS)
 pyeParseUMB$(EXEEXT): $(pyeParseUMB_OBJECTS) $(pyeParseUMB_DEPENDENCIES) 
 	@rm -f pyeParseUMB$(EXEEXT)
 	$(pyeParseUMB_LINK) $(pyeParseUMB_OBJECTS) $(pyeParseUMB_LDADD) $(LIBS)
@@ -267,8 +281,10 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CreateMB.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CreateUMB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ParseUMB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pyeCreateMB.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pyeCreateUMB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pyeParseUMB.Po@am__quote@
 
 .cpp.o:

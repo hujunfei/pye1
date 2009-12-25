@@ -2,7 +2,7 @@
 // C++ Interface: CreateMB
 //
 // Description:
-// 分析utf8编码的词语文件，并生成一份二进制的码表文件
+// 分析utf8编码的词语文件，并生成一份二进制的系统码表文件
 // 词语文件格式: 词语 拼音 频率
 // e.g.: 郁闷 yu'men 1234
 //
@@ -56,8 +56,8 @@ public:
 	CreateMB();
 	~CreateMB();
 
-	void CreatePhraseIndex(const char *sfile);
-	void WritePhraseIndex(const char *tfile);
+	void CreateIndexTree(const char *sfile);
+	void WriteIndexTree(const char *tfile);
 private:
 	bool BreakPhraseString(char *lineptr, const char **phrase,
 			 const char **pinyin, const char **freq);
