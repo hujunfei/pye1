@@ -74,8 +74,6 @@ public:
 
 	int8_t indexs;		///< 此索引点下的总索引量
 	UserCharsIndexPoint *table;	///< 按汉字索引值分类的索引点数组索引表
-	int fd;			///< 词语数据文件描述符
-	off_t offset;		///< 索引部分的绝对偏移量
 };
 
 class CreateUMB
@@ -95,10 +93,10 @@ private:
 	GNode *SearchChildByCharsIndex(GNode *parent, int8_t index);
 	GNode *SearchChildByCharsLength(GNode *parent, int len);
 
-	void WritePinyinMBData();
-	void WritePinyinMBIndex();
+	void WritePinyinMBData(int fd);
+	void WritePinyinMBIndex(int fd);
 
-	GNode *rnode;	///< 词语索引树的根节点
+	GNode *treeroot;	///< 词语索引树的根节点
 	UserRootIndexPoint root;	///< 词语树的根索引点
 private:
 	static gboolean DeletePhraseDatum(GNode *node);

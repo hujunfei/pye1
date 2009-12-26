@@ -44,26 +44,30 @@ UserCharsIndexPoint::~UserCharsIndexPoint()
 {
 	delete [] table;
 }
-UserRootIndexPoint::UserRootIndexPoint():indexs(0), table(NULL),
- fd(-1), offset(0)
+UserRootIndexPoint::UserRootIndexPoint():indexs(0), table(NULL)
 {}
 UserRootIndexPoint::~UserRootIndexPoint()
 {
 	delete [] table;
-	close(fd);
 }
 /** @} */
 
+/**
+ * 类构造函数.
+ */
 CreateUMB::CreateUMB()
 {
-	rnode = g_node_new(NULL);
+	treeroot = g_node_new(NULL);
 }
 
+/**
+ * 类析构函数.
+ */
 CreateUMB::~CreateUMB()
 {
-	g_node_traverse(rnode, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
+	g_node_traverse(treeroot, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
 			 GNodeTraverseFunc(DeletePhraseDatum), NULL);
-	g_node_destroy(rnode);
+	g_node_destroy(treeroot);
 }
 
 /**
@@ -108,24 +112,27 @@ void CreateUMB::CreateIndexTree(const char *sfile)
  */
 void CreateUMB::WriteIndexTree(const char *tfile)
 {
+	int fd;
+	off_t offset;
+
 	/* 创建目标文件 */
-	if ((root.fd = open(tfile, O_WRONLY | O_CREAT | O_EXCL, 00644)) == -1)
+	if ((fd = open(tfile, O_WRONLY | O_CREAT | O_EXCL, 00644)) == -1)
 		errx(1, "Open file \"%s\" failed, %s", tfile, strerror(errno));
 
-	/* 写出索引部分偏移量 */
-	xwrite(root.fd, &root.offset, sizeof(root.offset));
+	/* 写出索引部分的偏移量 */
+	xwrite(fd, &offset, sizeof(offset));	//仅仅占位而已
 	/* 写出码表数据部分 */
-	WritePinyinMBData();
-	/* 更新索引部分偏移量 */
-	root.offset = lseek(root.fd, 0, SEEK_CUR);
-	lseek(root.fd, 0, SEEK_SET);
-	xwrite(root.fd, &root.offset, sizeof(root.offset));
-	lseek(root.fd, 0, SEEK_END);
+	WritePinyinMBData(fd);
+	/* 更新索引部分的偏移量 */
+	offset = lseek(fd, 0, SEEK_CUR);
+	lseek(fd, 0, SEEK_SET);
+	xwrite(fd, &offset, sizeof(offset));
+	lseek(fd, 0, SEEK_END);
 	/* 写出码表索引部分 */
-	WritePinyinMBIndex();
+	WritePinyinMBIndex(fd);
 
-	/* 关闭目标文件 */
-	close(root.fd);
+	/* 关闭文件 */
+	close(fd);
 }
 
 /**
@@ -193,7 +200,7 @@ void CreateUMB::InsertPhraseToTree(PhraseDatum *phrdt)
 {
 	GNode *parent, *tnode;
 
-	parent = SearchChildByCharsIndex(rnode, phrdt->chidx->major);
+	parent = SearchChildByCharsIndex(treeroot, phrdt->chidx->major);
 	parent = SearchChildByCharsLength(parent, phrdt->chlen);
 
 	tnode = g_node_first_child(parent);
@@ -249,16 +256,63 @@ GNode *CreateUMB::SearchChildByCharsLength(GNode *parent, int len)
 
 /**
  * 写出拼音码表文件的数据部分.
+ * @param fd 文件描述符
  */
-void CreateUMB::WritePinyinMBData()
+void CreateUMB::WritePinyinMBData(int fd)
 {
+	GNode *indexn, *lengthn, *phrdtn;
+	UserCharsIndexPoint *indexp;
+	UserCharsLengthPoint *lengthp;
+	PhraseDatum *phrdt;
+	int length;
+	guint number;
 
+	/* 填充根节点数据 */
+	indexn = g_node_last_child(treeroot);
+	root.indexs = GPOINTER_TO_INT(indexn->data) + 1;
+	root.table = new UserCharsIndexPoint[root.indexs];
+	/* 构建树 */
+	indexn = g_node_first_child(treeroot);
+	do {
+		/* 填充词语索引值节点数据 */
+		indexp = (root.table + GPOINTER_TO_INT(indexn->data));
+		lengthn = g_node_last_child(indexn);
+		indexp->indexs = GPOINTER_TO_INT(lengthn->data);
+		indexp->table = new UserCharsLengthPoint[indexp->indexs];
+		/* 构建树 */
+		lengthn = g_node_first_child(indexn);
+		do {
+			length = GPOINTER_TO_INT(lengthn->data);
+			lengthp = (indexp->table + length - 1);
+			lengthp->childrens = g_node_n_children(lengthn);
+			lengthp->chidx = new CharsIndex[length * lengthp->childrens];
+			lengthp->phrinf = new UserPhraseInfo[lengthp->childrens];
+			/* 构建数组 */
+			number = 0;
+			phrdtn = g_node_first_child(lengthn);
+			do {
+				/* 填充组项 */
+				phrdt = (PhraseDatum *)phrdtn->data;
+				memcpy(lengthp->chidx + length * number, phrdt->chidx,
+							 sizeof(CharsIndex) * length);
+				(lengthp->phrinf + number)->offset = lseek(fd, 0,
+									 SEEK_CUR);
+				(lengthp->phrinf + number)->freq = phrdt->freq;
+				/* 写出词语数据 */
+				xwrite(fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
+				xwrite(fd, phrdt->data, sizeof(gunichar2) * phrdt->dtlen);
+				/* 编号增加 */
+				number++;
+			} while ( (phrdtn = g_node_next_sibling(phrdtn)));
+		} while ( (lengthn = g_node_next_sibling(lengthn)));
+	} while ( (indexn = g_node_next_sibling(indexn)));
 }
 
 /**
  * 写出拼音码表文件的索引部分.
+ * @param fd 文件描述符
  */
-void CreateUMB::WritePinyinMBIndex()
+void CreateUMB::WritePinyinMBIndex(int fd)
 {
 	UserCharsIndexPoint *indexp;
 	UserCharsLengthPoint *lengthp;
@@ -266,14 +320,11 @@ void CreateUMB::WritePinyinMBIndex()
 	int length;
 
 	/* 写出根索引点的数据 */
-	lseek(root.fd, 0, SEEK_SET);
-	xwrite(root.fd, &root.offset, sizeof(root.offset));
-	lseek(root.fd, root.offset, SEEK_SET);
-	xwrite(root.fd, &root.indexs, sizeof(root.indexs));
+	xwrite(fd, &root.indexs, sizeof(root.indexs));
 	if (root.indexs == 0)
 		return;
 	/* 写出汉字索引值的索引数据 */
-	xwrite(root.fd, root.table, sizeof(UserCharsIndexPoint) * root.indexs);
+	xwrite(fd, root.table, sizeof(UserCharsIndexPoint) * root.indexs);
 	index = 0;
 	while (index < root.indexs) {
 		indexp = root.table + index;
@@ -282,7 +333,7 @@ void CreateUMB::WritePinyinMBIndex()
 			continue;
 		}
 		/* 写出汉字索引数组长度的索引数据 */
-		xwrite(root.fd, indexp->table, sizeof(UserCharsLengthPoint) *
+		xwrite(fd, indexp->table, sizeof(UserCharsLengthPoint) *
 							 indexp->indexs);
 		length = 1;
 		while (length <= indexp->indexs) {
@@ -292,9 +343,9 @@ void CreateUMB::WritePinyinMBIndex()
 				continue;
 			}
 			/* 写出汉字索引&词语信息的数据 */
-			xwrite(root.fd, lengthp->chidx, sizeof(CharsIndex) * length *
-								 lengthp->childrens);
-			xwrite(root.fd, lengthp->phrinf, sizeof(UserPhraseInfo) *
+			xwrite(fd, lengthp->chidx, sizeof(CharsIndex) * length *
+							 lengthp->childrens);
+			xwrite(fd, lengthp->phrinf, sizeof(UserPhraseInfo) *
 							 lengthp->childrens);
 			length++;
 		}

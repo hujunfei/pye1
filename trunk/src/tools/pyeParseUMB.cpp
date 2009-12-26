@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	}
 	sfile = argv[optind];
 	if (!dfile)
-		dfile = "phrase.txt";
+		dfile = "user.txt";
 
 	pumb.CreateIndexTree(sfile);
 	pumb.WriteIndexTree(dfile, length, reset);

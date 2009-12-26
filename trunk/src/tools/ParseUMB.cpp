@@ -171,14 +171,14 @@ void ParseUMB::WritePhraseIndexTree(FILE *stream, int length, bool reset)
 				lencnt++;
 				continue;
 			}
-			numcnt = 0;
-			while (numcnt < lengthp->childrens) {
+			numcnt = lengthp->childrens;
+			while (numcnt > 0) {
+				numcnt--;
 				phridx.chidx = lengthp->chidx + lencnt * numcnt;
 				phridx.chlen = lencnt;
 				phridx.offset = (lengthp->phrinf + numcnt)->offset;
 				phridx.freq = (lengthp->phrinf + numcnt)->freq;
 				WritePhraseData(stream, &phridx, reset);
-				numcnt++;
 			}
 			lencnt++;
 		}
