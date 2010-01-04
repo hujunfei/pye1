@@ -144,6 +144,15 @@ bool PinyinEditor::MoveCursorPoint(int offset)
 }
 
 /**
+ * 获取当前光标的偏移量.
+ * @return 当前光标偏移量
+ */
+guint PinyinEditor::GetCursorPoint()
+{
+	return cursor;
+}
+
+/**
  * 插入新的拼音索引字符.
  * @param ch 字符
  * @return 执行状况
@@ -155,6 +164,7 @@ bool PinyinEditor::InsertPinyinKey(char ch)
 	cursor++;
 	/* 清空必要缓冲数据 */
 	ClearEngineUnitBuffer();
+	ClearPinyinEditorIdxBuffer();
 	ClearPinyinEditorOldBuffer();
 	ClearPinyinEditorTempBuffer();
 	/* 创建汉字索引数组 */
@@ -177,6 +187,7 @@ bool PinyinEditor::DeletePinyinKey()
 	pytable = g_array_remove_index(pytable, cursor);
 	/* 清空必要缓冲数据 */
 	ClearEngineUnitBuffer();
+	ClearPinyinEditorIdxBuffer();
 	ClearPinyinEditorOldBuffer();
 	ClearPinyinEditorTempBuffer();
 	/* 创建汉字索引数组 */
@@ -200,6 +211,7 @@ bool PinyinEditor::BackspacePinyinKey()
 	pytable = g_array_remove_index(pytable, cursor);
 	/* 清空必要缓冲数据 */
 	ClearEngineUnitBuffer();
+	ClearPinyinEditorIdxBuffer();
 	ClearPinyinEditorOldBuffer();
 	ClearPinyinEditorTempBuffer();
 	/* 创建汉字索引数组 */
@@ -614,7 +626,7 @@ bool PinyinEditor::FeedbackSelectedPhrase()
 }
 
 /**
- * 词语查询工作已经已经完成.
+ * 词语查询工作是否已经完成.
  * @return 是否完成
  */
 bool PinyinEditor::IsFinishInquirePhrase()
@@ -922,6 +934,16 @@ void PinyinEditor::ClearPinyinEditorBuffer()
 		delete (PhraseData *)tlist->data;
 	g_slist_free(cclist);
 	cclist = NULL;
+}
+
+/**
+ * 清空拼音引擎自身的待查询索引缓冲数据.
+ */
+void PinyinEditor::ClearPinyinEditorIdxBuffer()
+{
+	delete [] chidx;
+	chidx = NULL;
+	chlen = 0;
 }
 
 /**
