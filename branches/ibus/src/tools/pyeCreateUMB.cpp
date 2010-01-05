@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "../include/sys.h"
-#include "CreateMB.h"
+#include "CreateUMB.h"
 
 const struct option options[] = {
 	{"help", 0, NULL, 'h'},
@@ -28,19 +28,19 @@ const struct option options[] = {
 };
 void print_usage()
 {
-	printf("Usage: pyeCreateMB inputfile [-o outputfile]\n"
+	printf("Usage: pyeCreateUMB inputfile [-o outputfile]\n"
 		 "\t-o <file> --output=<file>\n\t\tplace the output into <file>\n"
 		 "\t-h --help\n\t\tdisplay this help and exit\n"
 		 "\t-v --version\n\t\toutput version information and exit\n");
 }
 void print_version()
 {
-	printf("pyeCreateMB: 0.1.0\n");
+	printf("pyeCreateUMB: 0.1.0\n");
 }
 
 int main(int argc, char *argv[])
 {
-	CreateMB cmb;
+	CreateUMB cumb;
 	const char *sfile, *dfile;
 	int opt;
 
@@ -67,10 +67,10 @@ int main(int argc, char *argv[])
 	}
 	sfile = argv[optind];
 	if (!dfile)
-		dfile = "phrase.mb";
+		dfile = "user.mb";
 
-	cmb.CreateIndexTree(sfile);
-	cmb.WriteIndexTree(dfile);
+	cumb.CreateIndexTree(sfile);
+	cumb.WriteIndexTree(dfile);
 
 	return 0;
 }

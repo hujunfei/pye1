@@ -12,7 +12,7 @@
 #ifndef HALFFULLCONVERTER_H
 #define HALFFULLCONVERTER_H
 
-#include "include/dep.h"
+#include "include/deplib.h"
 
 class HalfFullConverter {
 public:

@@ -24,6 +24,7 @@ public:
 	bool SyncData();
 	bool SetEditorMode(bool zh);
 	bool MoveCursorPoint(int offset);
+	guint GetCursorPoint();
 	bool InsertPinyinKey(char ch);
 	bool DeletePinyinKey();
 	bool BackspacePinyinKey();
@@ -51,6 +52,7 @@ private:
 	char *RectifyPinyinString(const char *string, const RectifyUnit *rtftable);
 	void ClearEngineUnitBuffer();
 	void ClearPinyinEditorBuffer();
+	void ClearPinyinEditorIdxBuffer();
 	void ClearPinyinEditorOldBuffer();
 	void ClearPinyinEditorTempBuffer();
 

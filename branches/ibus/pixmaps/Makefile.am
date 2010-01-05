@@ -1,5 +1,5 @@
-pixmaps = chinese.svg full-letter.svg half-letter.svg ibus-pye.svg \
-	english.svg full-punct.svg half-punct.svg
+pixmaps = chinese.png english.png full-letter.png full-punct.png \
+	half-letter.png half-punct.png pye.png
 
 pixmapsdir = $(pkgdatadir)/icons
 nobase_dist_pixmaps_DATA = $(pixmaps)

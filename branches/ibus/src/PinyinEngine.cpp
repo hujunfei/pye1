@@ -256,8 +256,8 @@ IBusPropList *PinyinEngine::CreateProperty()
 	property = ibus_property_new("mode.chinese",
 			 PROP_TYPE_NORMAL,
 			 ibus_text_new_from_static_string("CN"),
-			 chmode ? PKGDATADIR "/icons/chinese.svg" :
-				 PKGDATADIR "/icons/english.svg",
+			 chmode ? PKGDATADIR "/icons/chinese.png" :
+				 PKGDATADIR "/icons/english.png",
 			 ibus_text_new_from_static_string("Chinese"),
 			 TRUE,
 			 TRUE,
@@ -271,8 +271,8 @@ IBusPropList *PinyinEngine::CreateProperty()
 	property = ibus_property_new("mode.full_letter",
 			 PROP_TYPE_NORMAL,
 			 ibus_text_new_from_static_string(flmode ? "Ａａ" : "Aa"),
-			 flmode ? PKGDATADIR "/icons/full-letter.svg" :
-				 PKGDATADIR"/icons/half-letter.svg",
+			 flmode ? PKGDATADIR "/icons/full-letter.png" :
+				 PKGDATADIR"/icons/half-letter.png",
 			 ibus_text_new_from_static_string("Full/Half width letter"),
 			 TRUE,
 			 TRUE,
@@ -286,8 +286,8 @@ IBusPropList *PinyinEngine::CreateProperty()
 	property = ibus_property_new("mode.full_punct",
 			 PROP_TYPE_NORMAL,
 			 ibus_text_new_from_static_string(fpmode ? "，。" : ",."),
-			 fpmode ? PKGDATADIR "/icons/full-punct.svg" :
-				 PKGDATADIR "/icons/half-punct.svg",
+			 fpmode ? PKGDATADIR "/icons/full-punct.png" :
+				 PKGDATADIR "/icons/half-punct.png",
 			 ibus_text_new_from_static_string("Full/Half width punctuation"),
 			 TRUE,
 			 TRUE,
@@ -346,8 +346,8 @@ void PinyinEngine::ToggleModeChinese()
 	property = IBUS_PROPERTY(g_object_get_data(G_OBJECT(props), "mode.chinese"));
 	text = ibus_text_new_from_static_string(chmode ? "CN" : "EN");
 	ibus_property_set_label(property, text);
-	ibus_property_set_icon(property, chmode ? PKGDATADIR "/icons/chinese.svg" :
-						 PKGDATADIR "/icons/english.svg");
+	ibus_property_set_icon(property, chmode ? PKGDATADIR "/icons/chinese.png" :
+						 PKGDATADIR "/icons/english.png");
 	ibus_engine_update_property(engine, property);
 
 	/* 字母无条件回到半角模式 */
@@ -370,8 +370,8 @@ void PinyinEngine::ToggleModeFullLetter()
 	property = IBUS_PROPERTY(g_object_get_data(G_OBJECT(props), "mode.full_letter"));
 	text = ibus_text_new_from_static_string(flmode ? "Ａａ" : "Aa");
 	ibus_property_set_label(property, text);
-	ibus_property_set_icon(property, flmode ? PKGDATADIR "/icons/full-letter.svg" :
-						 PKGDATADIR "/icons/half-letter.svg");
+	ibus_property_set_icon(property, flmode ? PKGDATADIR "/icons/full-letter.png" :
+						 PKGDATADIR "/icons/half-letter.png");
 	ibus_engine_update_property(engine, property);
 }
 
@@ -387,8 +387,8 @@ void PinyinEngine::ToggleModeFullPunct ()
 	property = IBUS_PROPERTY(g_object_get_data(G_OBJECT(props), "mode.full_punct"));
 	text = ibus_text_new_from_static_string(fpmode ? "，。" : ",.");
 	ibus_property_set_label(property, text);
-	ibus_property_set_icon(property, fpmode ? PKGDATADIR "/icons/full-punct.svg" :
-						 PKGDATADIR "/icons/half-punct.svg");
+	ibus_property_set_icon(property, fpmode ? PKGDATADIR "/icons/full-punct.png" :
+						 PKGDATADIR "/icons/half-punct.png");
 	ibus_engine_update_property(engine, property);
 }
 

@@ -15,7 +15,7 @@
 			<language>zh_CN</language>
 			<license>GPL 2+</license>
 			<author>Jally &lt;jallyx@163.com&gt;</author>
-			<icon>${pkgdatadir}/icons/ibus-pye.svg</icon>
+			<icon>${pkgdatadir}/icons/pye.png</icon>
 			<layout>us</layout>
 			<longname>Pinyin Engine</longname>
 			<description>Pinyin input method</description>

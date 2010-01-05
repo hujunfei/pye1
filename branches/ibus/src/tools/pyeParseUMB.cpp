@@ -18,41 +18,54 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "../include/sys.h"
-#include "CreateMB.h"
+#include "ParseUMB.h"
 
 const struct option options[] = {
 	{"help", 0, NULL, 'h'},
+	{"length", 1, NULL, 'l'},
 	{"output", 1, NULL, 'o'},
+	{"reset", 0, NULL, 'r'},
 	{"version", 0, NULL, 'v'},
 	{NULL, 0, NULL, 0}
 };
 void print_usage()
 {
-	printf("Usage: pyeCreateMB inputfile [-o outputfile]\n"
-		 "\t-o <file> --output=<file>\n\t\tplace the output into <file>\n"
+	printf("Usage: pyeParseUMB inputfile [-o outputfile]\n"
 		 "\t-h --help\n\t\tdisplay this help and exit\n"
+		 "\t-l <n> --length=<n>\n\t\tthe length of the shortest phrase\n"
+		 "\t-o <file> --output=<file>\n\t\tplace the output into <file>\n"
+		 "\t-r --reset\n\t\treset all phrase frequencies\n"
 		 "\t-v --version\n\t\toutput version information and exit\n");
 }
 void print_version()
 {
-	printf("pyeCreateMB: 0.1.0\n");
+	printf("pyeParseUMB: 0.1.0\n");
 }
 
 int main(int argc, char *argv[])
 {
-	CreateMB cmb;
+	ParseUMB pumb;
 	const char *sfile, *dfile;
-	int opt;
+	int length, opt;
+	bool reset;
 
 	sfile = dfile = NULL;
-	while ((opt = getopt_long(argc, argv, "o:hv", options, NULL)) != -1) {
+	length = 1;
+	reset = false;
+	while ((opt = getopt_long(argc, argv, "hl:o:rv", options, NULL)) != -1) {
 		switch (opt) {
-		case 'o':
-			dfile = optarg;
-			break;
 		case 'h':
 			print_usage();
 			exit(0);
+		case 'l':
+			length = atoi(optarg);
+			break;
+		case 'o':
+			dfile = optarg;
+			break;
+		case 'r':
+			reset = true;
+			break;
 		case 'v':
 			print_version();
 			exit(0);
@@ -67,11 +80,10 @@ int main(int argc, char *argv[])
 	}
 	sfile = argv[optind];
 	if (!dfile)
-		dfile = "phrase.mb";
+		dfile = "user.txt";
 
-	cmb.CreateIndexTree(sfile);
-	cmb.WriteIndexTree(dfile);
+	pumb.CreateIndexTree(sfile);
+	pumb.WriteIndexTree(dfile, length, reset);
 
 	return 0;
 }
-

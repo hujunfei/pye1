@@ -72,7 +72,7 @@ static void start_component()
 					 "zh_CN",
 					 "GPL 2+",
 					 "Jally jallyx@163.com",
-					 PKGDATADIR "/icons/ibus-pye.svg",
+					 PKGDATADIR "/icons/pye.png",
 					 "us");
 		ibus_component_add_engine(component, desc);
 		ibus_bus_register_component(bus, component);

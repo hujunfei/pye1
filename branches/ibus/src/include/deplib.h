@@ -1,5 +1,5 @@
 //
-// C++ Interface: dep
+// C++ Interface: deplib
 //
 // Description:
 // 本程序所依赖底层库的头文件集合
@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_INCLUDE_DEP_H
-#define __SRC_INCLUDE_DEP_H
+#ifndef __SRC_INCLUDE_DEPLIB_H
+#define __SRC_INCLUDE_DEPLIB_H
 
 #include <glib.h>
 #include <ibus.h>

@@ -12,7 +12,7 @@
 #ifndef __SRC_CONFIG_H
 #define __SRC_CONFIG_H
 
-#include "include/dep.h"
+#include "include/deplib.h"
 #include "include/sys.h"
 
 class Config

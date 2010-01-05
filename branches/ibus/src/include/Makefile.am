@@ -1,3 +1,3 @@
 METASOURCES = AUTO
 
-noinst_HEADERS = dep.h sys.h
+noinst_HEADERS = deplib.h sys.h

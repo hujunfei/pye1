@@ -68,6 +68,8 @@ public:
 	void CreateUserEngineUnit(const char *user);
 	void AddRectifyPinyinPair(const char *pinyin1, const char *pinyin2);
 	void AddFuzzyPinyinUnit(const char *unit1, const char *unit2);
+	void ClearRectifyPinyinPair();
+	void ClearFuzzyPinyinUnit();
 	void BakUserEnginePhrase();
 
 	void SyncEngineUnitData(GSList **euphrlist, time_t stamp) const;

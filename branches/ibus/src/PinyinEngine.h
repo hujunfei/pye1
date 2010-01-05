@@ -13,7 +13,7 @@
 #define PINYINENGINE_H
 
 #include "engine/PinyinEditor.h"
-#include "include/dep.h"
+#include "include/deplib.h"
 
 class PinyinEngine
 {

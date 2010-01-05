@@ -1,18 +1,20 @@
 //
-// C++ Interface: InquireUserPhrase
+// C++ Interface: ParseUMB
 //
 // Description:
-// 根据用户码表文件数据建立词语索引树，并接受以汉字索引数组为参数的查询方式
+// 分析二进制的用户码表文件，并生成一份utf8编码的词语文件
+// 词语文件格式: 词语 拼音 频率
+// e.g.: 郁闷 yu'men 1234
 //
 // Author: Jally <jallyx@163.com>, (C) 2009
 //
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_ENGINE_INQUIREUSERPHRASE_H
-#define __SRC_ENGINE_INQUIREUSERPHRASE_H
+#ifndef __SRC_TOOLS_PARSEUMB_H
+#define __SRC_TOOLS_PARSEUMB_H
 
-#include "mess.h"
+#include "../engine/mess.h"
 
 /**
  * 词语信息.
@@ -59,33 +61,22 @@ public:
 	int8_t indexs;		///< 此索引点下的总索引量
 	UserCharsIndexPoint *table;	///< 按汉字索引值分类的索引点数组索引表
 	int fd;			///< 词语数据文件描述符
-	off_t offset;		///< 索引部分的绝对偏移量
 };
 
-class InquireUserPhrase: public InquirePhrase
+class ParseUMB
 {
 public:
-	InquireUserPhrase();
-	virtual ~InquireUserPhrase();
+	ParseUMB();
+	~ParseUMB();
 
-	virtual void CreateIndexTree(const char *mfile);
-	virtual void SetFuzzyPinyinUnits(const int8_t *fz);
-	virtual GSList *SearchMatchPhrase(const CharsIndex *chidx, int len);
-	virtual PhraseIndex *SearchPreferPhrase(const CharsIndex *chidx, int len);
-	virtual PhraseData *AnalysisPhraseIndex(const PhraseIndex *phridx);
-	void InsertPhraseToTree(const PhraseData *phrdt);
-	void DeletePhraseFromTree(const PhraseData *phrdt);
-	void IncreasePhraseFreq(const PhraseData *phrdt);
-	void WritePhraseIndexTree();
+	void CreateIndexTree(const char *sfile);
+	void WriteIndexTree(const char *dfile, int length, bool reset);
 private:
-	void WriteEmptyIndexTree();
 	void ReadPhraseIndexTree();
-	GSList *SearchIndexMatchPhrase(int8_t index, const CharsIndex *chidx, int len);
-	PhraseIndex *SearchIndexPreferPhrase(int8_t index, const CharsIndex *chidx,
-									 int len);
-	bool MatchCharsIndex(const CharsIndex *sidx, const CharsIndex *didx, int len);
+	void WritePhraseIndexTree(FILE *stream, int length, bool reset);
+	void WritePhraseData(FILE *stream, PhraseIndex *phridx, bool reset);
+	void AnalysisPhraseIndex(const PhraseIndex *phridx, PhraseData *phrdt);
 
-	const int8_t *fztable;		///< 模模糊拼音单元对照表
 	UserRootIndexPoint root;	///< 词语树的根索引点
 };
 

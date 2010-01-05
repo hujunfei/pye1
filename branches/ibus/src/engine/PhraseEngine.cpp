@@ -151,7 +151,7 @@ void PhraseEngine::CreateUserEngineUnit(const char *user)
 }
 
 /**
- * 增加拼音矫正对.
+ * 添加拼音矫正对.
  * @param pinyin1 待矫正拼音串
  * @param pinyin2 矫正拼音串
  */
@@ -179,6 +179,39 @@ void PhraseEngine::AddFuzzyPinyinUnit(const char *unit1, const char *unit2)
 	uidx2 = parse.GetStringIndex(unit2);
 	*(fztable + uidx1) = uidx2;
 	*(fztable + uidx2) = uidx1;
+}
+
+/**
+ * 清空拼音矫正对.
+ */
+void PhraseEngine::ClearRectifyPinyinPair()
+{
+	guint count;
+	RectifyUnit *rtfunit;
+
+	count = 0;
+	while (count < rtftable->len) {
+		rtfunit = &g_array_index(rtftable, RectifyUnit, count);
+		if (!rtfunit->isstatic) {
+			g_free((gpointer)rtfunit->fstring);
+			g_free((gpointer)rtfunit->tstring);
+		}
+		count++;
+	}
+	rtftable = g_array_set_size(rtftable, 0);
+}
+
+/**
+ * 清空模糊拼音单元.
+ */
+void PhraseEngine::ClearFuzzyPinyinUnit()
+{
+	ParseString parse;
+	int8_t count, sum;
+
+	sum = parse.GetPinyinUnitSum();
+	for (count = 0; count < sum; count++)
+		*(fztable + count) = -1;
 }
 
 /**

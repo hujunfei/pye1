@@ -54,7 +54,7 @@ CreateMB::~CreateMB()
  * 根据sfile源文件的数据创建词语索引树.
  * @param sfile 源文件
  */
-void CreateMB::CreatePhraseIndex(const char *sfile)
+void CreateMB::CreateIndexTree(const char *sfile)
 {
 	FILE *stream;
 	PhraseDatum *phrdt;
@@ -90,7 +90,7 @@ void CreateMB::CreatePhraseIndex(const char *sfile)
  * 写出词语的索引和数据，即创建码表文件.
  * @param tfile 目标文件
  */
-void CreateMB::WritePhraseIndex(const char *tfile)
+void CreateMB::WriteIndexTree(const char *tfile)
 {
 	TravTreePara para;
 	int fd;
@@ -105,6 +105,7 @@ void CreateMB::WritePhraseIndex(const char *tfile)
 	para.eleaves = 0;
 	g_node_traverse(root, G_PRE_ORDER, G_TRAVERSE_ALL, -1,
 		 GNodeTraverseFunc(WritePinyinMBIndex), &para);
+	//计算数据部分起始偏移量
 	para.eoffset = lseek(fd, 0, SEEK_CUR) + sizeof(para.eoffset) * para.eleaves;
 	g_node_traverse(root, G_LEVEL_ORDER, G_TRAVERSE_LEAVES, -1,
 			 GNodeTraverseFunc(WritePinyinMBDtidx), &para);
