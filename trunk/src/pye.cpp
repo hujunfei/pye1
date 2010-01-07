@@ -23,17 +23,17 @@
 int main(int argc, char *argv[])
 {
 	GSList *tlist, *list;
-	PhraseEngine phregn;
-	PinyinEditor pyedit(&phregn);
+	PhraseEngine *phregn;
 	PhraseData *phrdt;
 	guint length, count;
 	gunichar2 *data;
 	glong dtlen;
 	char ch;
 
-	phregn.CreateSysEngineUnits("mb.txt");
-	phregn.CreateUserEngineUnit("user.mb");
-	phregn.AddFuzzyPinyinUnit("zh", "z");
+	phregn = PhraseEngine::GetInstance();
+	phregn->CreateSysEngineUnits("mb.txt");
+	phregn->CreateUserEngineUnit("user.mb");
+	PinyinEditor pyedit(phregn);
 
 	while ( (ch = getchar())) {
 		length = 5;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 				printf("\nCommit: %s\n", g_utf16_to_utf8(data, dtlen, NULL, NULL, NULL));
 				pyedit.FeedbackSelectedPhrase();
 				pyedit.FinishInquirePhrase();
-				phregn.BakUserEnginePhrase();
+				phregn->BakUserEnginePhrase();
 			} else {
 				pyedit.GetPagePhrase(&list, &length);
 				count = 1;

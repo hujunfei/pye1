@@ -88,6 +88,26 @@ PhraseEngine::~PhraseEngine()
 }
 
 /**
+ * 获取实例对象指针.
+ * @return 对象指针
+ */
+std::auto_ptr<PhraseEngine> PhraseEngine::instance;
+PhraseEngine *PhraseEngine::GetInstance()
+{
+	if (!instance.get())
+		instance.reset(new PhraseEngine);
+	return instance.get();
+}
+
+/**
+ * 释放实例对象.
+ */
+void PhraseEngine::FreeInstance()
+{
+	instance.reset(NULL);
+}
+
+/**
  * 创建系统词语引擎单元.
  * @param sys 系统码表配置文件
  */
@@ -135,6 +155,10 @@ void PhraseEngine::CreateUserEngineUnit(const char *user)
 	EngineUnit *eu;
 	char *dirname;
 
+	/* 如果用户词语引擎已经存在，则直接退出即可 */
+	if (userpath)
+		return;
+
 	/* 创建运行环境 */
 	userpath = g_strdup(user);
 	dirname = g_path_get_dirname(user);
@@ -175,8 +199,9 @@ void PhraseEngine::AddFuzzyPinyinUnit(const char *unit1, const char *unit2)
 	ParseString parse;
 	int8_t uidx1, uidx2;
 
-	uidx1 = parse.GetStringIndex(unit1);
-	uidx2 = parse.GetStringIndex(unit2);
+	if ((uidx1 = parse.GetStringIndex(unit1)) == -1
+		 || (uidx2 = parse.GetStringIndex(unit2)) == -1)
+		return;
 	*(fztable + uidx1) = uidx2;
 	*(fztable + uidx2) = uidx1;
 }
@@ -278,8 +303,8 @@ void PhraseEngine::DeletePhraseData(const PhraseData *phrdt) const
 	GSList *tlist;
 	EngineUnit *eu;
 
-	/* 如果此词汇无效或为系统词汇则直接退出即可 */
-	if (phrdt->offset == 0 || phrdt->offset == (off_t)(-1))
+	/* 如果此词汇非用户词汇则直接退出即可 */
+	if (phrdt->offset <= 0)
 		return;
 
 	/* 查询用户词语引擎单元 */
@@ -322,7 +347,7 @@ void PhraseEngine::FeedbackPhraseData(const PhraseData *phrdt) const
 		return;
 
 	/* 将词语数据反馈到用户词语引擎中 */
-	if (phrdt->offset == (off_t)(-1))
+	if (phrdt->offset < 0)
 		((InquireUserPhrase *)eu->inqphr)->InsertPhraseToTree(phrdt);
 	else
 		((InquireUserPhrase *)eu->inqphr)->IncreasePhraseFreq(phrdt);
