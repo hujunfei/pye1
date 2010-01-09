@@ -100,14 +100,6 @@ PhraseEngine *PhraseEngine::GetInstance()
 }
 
 /**
- * 释放实例对象.
- */
-void PhraseEngine::FreeInstance()
-{
-	instance.reset(NULL);
-}
-
-/**
  * 创建系统词语引擎单元.
  * @param sys 系统码表配置文件
  */
@@ -165,7 +157,7 @@ void PhraseEngine::CreateUserEngineUnit(const char *user)
 	bakpath = g_strdup_printf("%s/%s", dirname, "bak.mb");
 	g_free(dirname);
 	unlink(bakpath);	//删除可能错误的文件
-	pye_copy_file(bakpath, userpath);
+	copy_file(bakpath, userpath);
 
 	/* 创建引擎 */
 	eu = CreateEngineUnit(bakpath, G_MAXINT, USER_TYPE);
@@ -263,7 +255,7 @@ void PhraseEngine::BakUserEnginePhrase()
 	((InquireUserPhrase *)eu->inqphr)->WritePhraseIndexTree();
 	tmppath = g_strdup_printf("%s~", userpath);
 	unlink(tmppath);	//删除可能错误的文件
-	pye_copy_file(tmppath, bakpath);
+	copy_file(tmppath, bakpath);
 	rename(tmppath, userpath);
 	g_free(tmppath);
 }

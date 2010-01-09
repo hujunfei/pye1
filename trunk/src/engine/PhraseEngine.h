@@ -65,7 +65,6 @@ private:
 	~PhraseEngine();
 public:
 	static PhraseEngine *GetInstance();
-	static void FreeInstance();
 
 	void CreateSysEngineUnits(const char *sys);
 	void CreateUserEngineUnit(const char *user);

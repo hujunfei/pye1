@@ -14,6 +14,10 @@
 
 #include "../include/sys.h"
 
-int pye_copy_file(const char *dfile, const char *sfile);
+#define FLAG_ISSET(num,bit) ((num)&(1<<(bit)))
+#define FLAG_SET(num,bit) ((num)|=(1<<(bit)))
+#define FLAG_CLR(num,bit) ((num)&=(~(1<<(bit))))
+
+int copy_file(const char *destfile, const char *srcfile);
 
 #endif
