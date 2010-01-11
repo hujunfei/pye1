@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.63)
 AC_INIT(configure.in)
-AC_CONFIG_SRCDIR(src)
+AC_CONFIG_SRCDIR(acconfig.h)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(pye, 0.1.0)
 

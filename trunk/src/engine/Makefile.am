@@ -10,4 +10,4 @@ AM_CXXFLAGS = -Wall
 INCLUDES= $(all_includes) @PACKAGE_CFLAGS@
 
 noinst_HEADERS = DynamicPhrase.h InquireSysPhrase.h InquireUserPhrase.h ParseString.h \
-	PhraseEngine.h PinyinEditor.h mess.h deplib.h sys.h support.h wrapper.h
+	PhraseEngine.h PinyinEditor.h mess.h output.h deplib.h sys.h support.h wrapper.h
