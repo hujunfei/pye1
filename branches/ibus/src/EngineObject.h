@@ -1,5 +1,5 @@
 //
-// C++ Interface: Engine
+// C++ Interface: EngineObject
 //
 // Description:
 //
@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_ENGINE_H
-#define __SRC_ENGINE_H
+#ifndef __SRC_ENGINEOBJECT_H
+#define __SRC_ENGINEOBJECT_H
 
 #include "include/deplib.h"
 

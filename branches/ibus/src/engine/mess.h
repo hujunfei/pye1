@@ -12,8 +12,8 @@
 #ifndef __SRC_ENGINE_MESS_H
 #define __SRC_ENGINE_MESS_H
 
-#include "../include/sys.h"
-#include "../include/deplib.h"
+#include "sys.h"
+#include "deplib.h"
 
 /**
  * 汉字索引结构.
@@ -45,6 +45,8 @@ public:
 
 /**
  * 词语数据结构.
+ * 偏移量的特殊含义: \n
+ * 合成词汇(-3),定义词汇(-2),系统词汇(-1),无效词汇(0),用户词汇(>=1) \n
  */
 class PhraseData {
 public:
@@ -53,7 +55,7 @@ public:
 
 	CharsIndex *chidx;	///< 汉字索引数组 *
 	int chlen;		///< 汉字索引数组有效长度
-	off_t offset;		///< 词语索引偏移量,系统词汇(-1),无效词汇(0),用户词汇(>=1)
+	off_t offset;		///< 词语索引偏移量,在某些条件下也可代表特殊含义
 	gunichar2 *data;	///< 词语数据 *
 	glong dtlen;		///< 词语数据有效长度
 };

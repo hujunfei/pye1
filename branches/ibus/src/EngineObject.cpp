@@ -1,5 +1,5 @@
 //
-// C++ Implementation: Engine
+// C++ Implementation: EngineObject
 //
 // Description:
 //
@@ -9,7 +9,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#include "Engine.h"
+#include "EngineObject.h"
 #include "PinyinEngine.h"
 
 /* code of engine class of GObject */
@@ -28,7 +28,7 @@ typedef struct _IBusPinyinEngine IBusPinyinEngine;
 typedef struct _IBusPinyinEngineClass IBusPinyinEngineClass;
 struct _IBusPinyinEngine {
 	IBusEngine parent;
-	PinyinEngine *engine;	///< members
+	PinyinEngine *engine;
 };
 struct _IBusPinyinEngineClass {
 	IBusEngineClass parent;
@@ -36,8 +36,8 @@ struct _IBusPinyinEngineClass {
 
 /* functions prototype */
 static void ibus_pinyin_engine_class_init(IBusPinyinEngineClass *klass);
-static void ibus_pinyin_engine_init(IBusPinyinEngine *pinyin);
-static void ibus_pinyin_engine_destroy(IBusPinyinEngine *pinyin);
+static void ibus_pinyin_engine_init(IBusPinyinEngine *engine);
+static void ibus_pinyin_engine_destroy(IBusPinyinEngine *engine);
 
 static void ibus_pinyin_engine_disable(IBusEngine *engine);
 static void ibus_pinyin_engine_enable(IBusEngine *engine);
@@ -103,20 +103,20 @@ static void ibus_pinyin_engine_class_init(IBusPinyinEngineClass *klass)
 	engine_class->process_key_event = ibus_pinyin_engine_process_key_event;
 }
 
-static void ibus_pinyin_engine_init(IBusPinyinEngine *pinyin)
+static void ibus_pinyin_engine_init(IBusPinyinEngine *engine)
 {
-	if (g_object_is_floating(pinyin))
-		g_object_ref_sink(pinyin);
-	pinyin->engine = new PinyinEngine(IBUS_ENGINE(pinyin));
+	if (g_object_is_floating(engine))
+		g_object_ref_sink(engine);
+	engine->engine = new PinyinEngine(IBUS_ENGINE(engine));
 }
 
-static void ibus_pinyin_engine_destroy(IBusPinyinEngine *pinyin)
+static void ibus_pinyin_engine_destroy(IBusPinyinEngine *engine)
 {
-	if (pinyin->engine) {
-		delete pinyin->engine;
-		pinyin->engine = NULL;
+	if (engine->engine) {
+		delete engine->engine;
+		engine->engine = NULL;
 	}
-	IBUS_OBJECT_CLASS(parent_class)->destroy((IBusObject *)pinyin);
+	IBUS_OBJECT_CLASS(parent_class)->destroy((IBusObject *)engine);
 }
 
 static void ibus_pinyin_engine_disable(IBusEngine *engine)

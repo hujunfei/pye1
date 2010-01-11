@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.63)
 AC_INIT(configure.in)
-AC_CONFIG_SRCDIR(src/main.cpp)
+AC_CONFIG_SRCDIR(acconfig.h)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(ibus-pye, 0.1.0)
 
@@ -60,5 +60,4 @@ AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
 AC_OUTPUT(Makefile data/Makefile pixmaps/Makefile src/Makefile src/pye.xml.in \
-	src/engine/Makefile src/include/Makefile src/tools/Makefile \
-	src/utils/Makefile)
+	src/engine/Makefile src/tools/Makefile )

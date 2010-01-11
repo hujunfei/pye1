@@ -9,18 +9,18 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef PINYINENGINE_H
-#define PINYINENGINE_H
+#ifndef __SRC_PINYINENGINE_H
+#define __SRC_PINYINENGINE_H
 
 #include "engine/PinyinEditor.h"
-#include "include/deplib.h"
 
 class PinyinEngine
 {
 public:
-	PinyinEngine(IBusEngine *egn);
+	PinyinEngine(IBusEngine *busegn);
 	~PinyinEngine();
 
+	void UpdateConfig();
 	void EngineReset();
 	void EngineDisable();
 	void EngineEnable();
@@ -66,15 +66,16 @@ private:
 	void CommitString(const gchar *str);
 	void CommitStaticString(const gchar *str);
 
-	IBusEngine *engine;	///< 引擎基类
+	IBusEngine *busengine;	///< IBUS输入法引擎基类
 	PinyinEditor *pyedit;	///< 拼音编辑器
 	IBusLookupTable *lktable;	///< 词语查询表
 	IBusPropList *props;	///< 属性部件表
 
-	time_t timestamp;	///< 时间戳
-	time_t bakgap;		///< 备份时间间隔
+	guint pagesize;		///< 词语查询表的页面大小
+	uint8_t flags;		///< @see EngineConfig::flags
+
 	guint prekey;		///< 前一个键值
-	bool enmode;		///< 临时英文编辑模式
+	bool entmpmode;		///< 临时英文编辑模式
 	bool chmode;		///< 汉语模式
 	bool flmode;		///< 字母全角模式
 	bool fpmode;		///< 标点全角模式

@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -31,11 +30,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = pyeCreateMB$(EXEEXT) pyeCreateUMB$(EXEEXT) \
-	pyeParseUMB$(EXEEXT)
-subdir = src/tools
-DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in
+bin_PROGRAMS = test$(EXEEXT)
+subdir = src/test
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -46,21 +43,11 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_pyeCreateMB_OBJECTS = CreateMB.$(OBJEXT) pyeCreateMB.$(OBJEXT)
-pyeCreateMB_OBJECTS = $(am_pyeCreateMB_OBJECTS)
-pyeCreateMB_DEPENDENCIES = ../engine/libengine.a
-pyeCreateMB_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(pyeCreateMB_LDFLAGS) $(LDFLAGS) -o $@
-am_pyeCreateUMB_OBJECTS = CreateUMB.$(OBJEXT) pyeCreateUMB.$(OBJEXT)
-pyeCreateUMB_OBJECTS = $(am_pyeCreateUMB_OBJECTS)
-pyeCreateUMB_DEPENDENCIES = ../engine/libengine.a
-pyeCreateUMB_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(pyeCreateUMB_LDFLAGS) $(LDFLAGS) -o $@
-am_pyeParseUMB_OBJECTS = ParseUMB.$(OBJEXT) pyeParseUMB.$(OBJEXT)
-pyeParseUMB_OBJECTS = $(am_pyeParseUMB_OBJECTS)
-pyeParseUMB_DEPENDENCIES = ../engine/libengine.a
-pyeParseUMB_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(pyeParseUMB_LDFLAGS) $(LDFLAGS) -o $@
+am_test_OBJECTS = test.$(OBJEXT)
+test_OBJECTS = $(am_test_OBJECTS)
+test_DEPENDENCIES = ../engine/libengine.a
+test_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(test_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -69,11 +56,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(pyeCreateMB_SOURCES) $(pyeCreateUMB_SOURCES) \
-	$(pyeParseUMB_SOURCES)
-DIST_SOURCES = $(pyeCreateMB_SOURCES) $(pyeCreateUMB_SOURCES) \
-	$(pyeParseUMB_SOURCES)
-HEADERS = $(noinst_HEADERS)
+SOURCES = $(test_SOURCES)
+DIST_SOURCES = $(test_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -102,8 +86,6 @@ EXEEXT = @EXEEXT@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
 GREP = @GREP@
-IBUS_CFLAGS = @IBUS_CFLAGS@
-IBUS_LIBS = @IBUS_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -176,22 +158,15 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 METASOURCES = AUTO
-pyeCreateMB_SOURCES = CreateMB.cpp pyeCreateMB.cpp
-pyeCreateUMB_SOURCES = CreateUMB.cpp pyeCreateUMB.cpp
-pyeParseUMB_SOURCES = ParseUMB.cpp pyeParseUMB.cpp
+test_SOURCES = test.cpp
 AM_CXXFLAGS = -Wall
 
 # set the include path found by configure
 INCLUDES = $(all_includes) @PACKAGE_CFLAGS@
 
 # the library search path.
-pyeCreateMB_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
-pyeCreateMB_LDADD = $(INTLLIBS) ../engine/libengine.a
-pyeCreateUMB_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
-pyeCreateUMB_LDADD = $(INTLLIBS) ../engine/libengine.a
-pyeParseUMB_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
-pyeParseUMB_LDADD = $(INTLLIBS) ../engine/libengine.a
-noinst_HEADERS = CreateMB.h CreateUMB.h ParseUMB.h
+test_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
+test_LDADD = $(INTLLIBS) ../engine/libengine.a
 all: all-am
 
 .SUFFIXES:
@@ -205,9 +180,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/tools/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/test/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/tools/Makefile
+	  $(AUTOMAKE) --gnu  src/test/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -248,15 +223,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-pyeCreateMB$(EXEEXT): $(pyeCreateMB_OBJECTS) $(pyeCreateMB_DEPENDENCIES) 
-	@rm -f pyeCreateMB$(EXEEXT)
-	$(pyeCreateMB_LINK) $(pyeCreateMB_OBJECTS) $(pyeCreateMB_LDADD) $(LIBS)
-pyeCreateUMB$(EXEEXT): $(pyeCreateUMB_OBJECTS) $(pyeCreateUMB_DEPENDENCIES) 
-	@rm -f pyeCreateUMB$(EXEEXT)
-	$(pyeCreateUMB_LINK) $(pyeCreateUMB_OBJECTS) $(pyeCreateUMB_LDADD) $(LIBS)
-pyeParseUMB$(EXEEXT): $(pyeParseUMB_OBJECTS) $(pyeParseUMB_DEPENDENCIES) 
-	@rm -f pyeParseUMB$(EXEEXT)
-	$(pyeParseUMB_LINK) $(pyeParseUMB_OBJECTS) $(pyeParseUMB_LDADD) $(LIBS)
+test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) 
+	@rm -f test$(EXEEXT)
+	$(test_LINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -264,12 +233,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CreateMB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CreateUMB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ParseUMB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pyeCreateMB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pyeCreateUMB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pyeParseUMB.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -360,7 +324,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(HEADERS)
+all-am: Makefile $(PROGRAMS)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \

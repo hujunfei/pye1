@@ -60,9 +60,11 @@ public:
 
 class PhraseEngine
 {
-public:
+private:
 	PhraseEngine();
 	~PhraseEngine();
+public:
+	static PhraseEngine *GetInstance();
 
 	void CreateSysEngineUnits(const char *sys);
 	void CreateUserEngineUnit(const char *user);
@@ -84,11 +86,14 @@ private:
 
 	GSList *eulist;		///< 引擎链表
 	GArray *rtftable;	///< 拼音矫正表
-	int8_t *fztable;		///< 模糊拼音对照表
+	int8_t *fztable;	///< 模糊拼音对照表
 
-	char *userpath;	///< 用户码表路径
+	char *userpath;		///< 用户码表路径
 	char *bakpath;		///< 备份码表路径
 	time_t timestamp;	///< 引擎最后一次变动的时间戳
+private:
+	friend class std::auto_ptr<PhraseEngine>;
+	static std::auto_ptr<PhraseEngine> instance;	///< 实例指针
 };
 
 #endif

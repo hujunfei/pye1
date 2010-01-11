@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef HALFFULLCONVERTER_H
-#define HALFFULLCONVERTER_H
+#ifndef __SRC_HALFFULLCONVERTER_H
+#define __SRC_HALFFULLCONVERTER_H
 
 #include "include/deplib.h"
 

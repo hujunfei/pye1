@@ -10,7 +10,7 @@
 //
 //
 #include "InquireUserPhrase.h"
-#include "../utils/wrapper.h"
+#include "wrapper.h"
 
 /**
  * @name 相关底层数据的构造函数&析构函数.
@@ -175,7 +175,7 @@ PhraseData *InquireUserPhrase::AnalysisPhraseIndex(const PhraseIndex *phridx)
 	phrdt->chidx = new CharsIndex[phridx->chlen];
 	memcpy(phrdt->chidx, phridx->chidx, sizeof(CharsIndex) * phridx->chlen);
 	phrdt->chlen = phridx->chlen;
-	phrdt->offset = phridx->offset;
+	phrdt->offset = phridx->offset;	//词语索引偏移量,也标记这是用户词汇
 	lseek(root.fd, phrdt->offset, SEEK_SET);
 	xread(root.fd, &phrdt->dtlen, sizeof(phrdt->dtlen));
 	phrdt->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * phrdt->dtlen);

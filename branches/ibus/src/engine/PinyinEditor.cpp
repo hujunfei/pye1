@@ -57,9 +57,9 @@ RectifyUnit PinyinEditor::irtytable[] = {
 /**
  * 类构造函数.
  */
-PinyinEditor::PinyinEditor(PhraseEngine *engine):editmode(true), pytable(NULL),
- cursor(0), chidx(NULL), chlen(0), aclist(NULL), cclist(NULL), phregn(engine),
- euphrlist(NULL), timestamp(0)
+PinyinEditor::PinyinEditor(const PhraseEngine *engine):editmode(true),
+ pytable(NULL), cursor(0), chidx(NULL), chlen(0), aclist(NULL),
+ cclist(NULL), phregn(engine), euphrlist(NULL), timestamp(0)
 {
 	/* 待查询拼音表 */
 	pytable = g_array_new(TRUE, FALSE, 1);
@@ -141,15 +141,6 @@ bool PinyinEditor::MoveCursorPoint(int offset)
 		cursor = tmp;
 
 	return true;
-}
-
-/**
- * 获取当前光标的偏移量.
- * @return 当前光标偏移量
- */
-guint PinyinEditor::GetCursorPoint()
-{
-	return cursor;
 }
 
 /**
@@ -538,7 +529,7 @@ bool PinyinEditor::GetComposePhrase(PhraseData **phrdt)
 	*phrdt = new PhraseData;
 	(*phrdt)->chidx = new CharsIndex[offset];
 	(*phrdt)->chlen = 0;
-	(*phrdt)->offset = (off_t)(-1);	//标记这是系统词汇
+	(*phrdt)->offset = (off_t)(-3);	//标记这是合成词汇
 	(*phrdt)->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * length);
 	(*phrdt)->dtlen = 0;
 	tlist = phrdtlist;
@@ -647,6 +638,32 @@ bool PinyinEditor::FinishInquirePhrase()
 }
 
 /**
+ * 获取当前光标的偏移量.
+ * @return 当前光标偏移量
+ */
+guint PinyinEditor::GetCursorPoint()
+{
+	return cursor;
+}
+
+/**
+ * 获取即将被用来反馈的词汇的偏移量.
+ * @return 词汇偏移量
+ * @note 请不要将此偏移量用作其他用途，它只应该被用来判断词汇所属的类型
+ */
+off_t PinyinEditor::GetPhraseOffset()
+{
+	switch (g_slist_length(aclist)) {
+	case 0:
+		return 0;
+	case 1:
+		return ((PhraseData *)aclist->data)->offset;
+	default:
+		return (off_t)(-2);
+	}
+}
+
+/**
  * 创建用户词语.
  * @return 词语数据
  */
@@ -672,7 +689,7 @@ PhraseData *PinyinEditor::CreateUserPhrase()
 	phrdt = new PhraseData;
 	phrdt->chidx = new CharsIndex[chlen];
 	phrdt->chlen = 0;
-	phrdt->offset = (off_t)(-1);	//标记这是系统词汇
+	phrdt->offset = (off_t)(-2);	//标记这是自定义词汇
 	phrdt->data = (gunichar2 *)g_malloc(sizeof(gunichar2) * dtlen);
 	phrdt->dtlen = 0;
 	tlist = aclist;

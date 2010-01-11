@@ -17,8 +17,8 @@
 			<author>Jally &lt;jallyx@163.com&gt;</author>
 			<icon>${pkgdatadir}/icons/pye.png</icon>
 			<layout>us</layout>
-			<longname>Pinyin Engine</longname>
-			<description>Pinyin input method</description>
+			<longname>Pye Pinyin Engine</longname>
+			<description>pye input method</description>
 			<rank>99</rank>
 		</engine>
 	</engines>

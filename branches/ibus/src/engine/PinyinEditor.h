@@ -17,14 +17,13 @@
 class PinyinEditor
 {
 public:
-	PinyinEditor(PhraseEngine *engine);
+	PinyinEditor(const PhraseEngine *engine);
 	~PinyinEditor();
 
 	bool IsEmpty();
 	bool SyncData();
 	bool SetEditorMode(bool zh);
 	bool MoveCursorPoint(int offset);
-	guint GetCursorPoint();
 	bool InsertPinyinKey(char ch);
 	bool DeletePinyinKey();
 	bool BackspacePinyinKey();
@@ -41,6 +40,8 @@ public:
 	bool FeedbackSelectedPhrase();
 	bool IsFinishInquirePhrase();
 	bool FinishInquirePhrase();
+	guint GetCursorPoint();
+	off_t GetPhraseOffset();
 private:
 	PhraseData *CreateUserPhrase();
 	void CreateCharsIndex();

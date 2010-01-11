@@ -18,11 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include "engine/PhraseEngine.h"
-#include "Config.h"
-#include "Engine.h"
-
-PhraseEngine phregn;
-Config config;
+#include "EngineConfig.h"
+#include "EngineObject.h"
 
 /* options */
 static gboolean ibus = FALSE;
@@ -35,7 +32,6 @@ static const GOptionEntry entries[] = {
 
 static void ibus_disconnected_cb(IBusBus *bus, gpointer user_data)
 {
-	g_debug("bus disconnected");
 	ibus_quit();
 }
 
@@ -46,12 +42,14 @@ static void start_component()
 	IBusFactory *factory;
 	IBusConnection *conn;
 	IBusBus *bus;
+	EngineConfig *config;
 
 	bus = ibus_bus_new();
 	g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnected_cb), NULL);
 
 	conn = ibus_bus_get_connection(bus);
-	config.SetConnection(conn);
+	config = EngineConfig::GetInstance();
+	config->SetConnection(conn);
 	factory = ibus_factory_new(conn);
 	ibus_factory_add_engine(factory, "pinyin", IBUS_TYPE_PINYIN_ENGINE);
 
@@ -59,7 +57,7 @@ static void start_component()
 		ibus_bus_request_name(bus, "org.freedesktop.IBus.Pye", 0);
 	} else {
 		component = ibus_component_new("org.freedesktop.IBus.Pye",
-					 "Pinyin Component",
+					 "Pye Component",
 					 VERSION,
 					 "GPL 2+",
 					 "Jally jallyx@163.com",
@@ -67,8 +65,8 @@ static void start_component()
 					 NULL,
 					 NULL);
 		desc = ibus_engine_desc_new("pinyin",
-					 "Pinyin Engine",
-					 "Pinyin input method",
+					 "Pye Pinyin Engine",
+					 "pye input method",
 					 "zh_CN",
 					 "GPL 2+",
 					 "Jally jallyx@163.com",
@@ -81,10 +79,12 @@ static void start_component()
 
 static void init_phrase_engine()
 {
+	PhraseEngine *phrengine;
 	const gchar *env;
 	char path[1024];
 
-	phregn.CreateSysEngineUnits(PKGDATADIR "/data/config.txt");
+	phrengine = PhraseEngine::GetInstance();
+	phrengine->CreateSysEngineUnits(PKGDATADIR "/data/config.txt");
 	env = g_get_home_dir();
 	snprintf(path, 1024, "%s/.ibus", env);
 	if (access(path, F_OK) != 0)
@@ -93,29 +93,7 @@ static void init_phrase_engine()
 	if (access(path, F_OK) != 0)
 		mkdir(path, 0777);
 	snprintf(path, 1024, "%s/.ibus/pye/user.mb", env);
-	phregn.CreateUserEngineUnit(path);
-
-	/* 模糊拼音 */
-// 	phregn.AddFuzzyPinyinUnit("z", "zh");
-// 	phregn.AddFuzzyPinyinUnit("c", "ch");
-// 	phregn.AddFuzzyPinyinUnit("s", "sh");
-// 	phregn.AddFuzzyPinyinUnit("an", "ang");
-// 	phregn.AddFuzzyPinyinUnit("on", "ong");
-// 	phregn.AddFuzzyPinyinUnit("en", "eng");
-// 	phregn.AddFuzzyPinyinUnit("in", "ing");
-// 	phregn.AddFuzzyPinyinUnit("eng", "ong");
-// 	phregn.AddFuzzyPinyinUnit("ian", "iang");
-// 	phregn.AddFuzzyPinyinUnit("uan", "uang");
-// 	phregn.AddFuzzyPinyinUnit("l", "n");
-// 	phregn.AddFuzzyPinyinUnit("f", "h");
-// 	phregn.AddFuzzyPinyinUnit("r", "l");
-// 	phregn.AddFuzzyPinyinUnit("k", "g");
-	/* 自动纠错 */
-	phregn.AddRectifyPinyinPair("ign", "ing");
-	phregn.AddRectifyPinyinPair("img", "ing");
-	phregn.AddRectifyPinyinPair("uei", "ui");
-	phregn.AddRectifyPinyinPair("uen", "un");
-	phregn.AddRectifyPinyinPair("iou", "iu");
+	phrengine->CreateUserEngineUnit(path);
 }
 
 int main(gint argc, gchar *argv[])
@@ -134,8 +112,8 @@ int main(gint argc, gchar *argv[])
 
 	/* 启动部件并运行程序 */
 	ibus_init();
-	start_component();
 	init_phrase_engine();
+	start_component();
 	ibus_main();
 
 	return 0;
