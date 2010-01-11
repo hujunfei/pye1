@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_INCLUDE_SYS_H
-#define __SRC_INCLUDE_SYS_H
+#ifndef __SRC_ENGINE_SYS_H
+#define __SRC_ENGINE_SYS_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

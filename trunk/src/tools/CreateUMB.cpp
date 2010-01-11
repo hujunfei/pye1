@@ -11,8 +11,8 @@
 //
 #include "CreateUMB.h"
 #include "../engine/ParseString.h"
-#include "../utils/output.h"
-#include "../utils/wrapper.h"
+#include "../engine/output.h"
+#include "../engine/wrapper.h"
 
 /**
  * @name 相关底层数据的构造函数&析构函数.

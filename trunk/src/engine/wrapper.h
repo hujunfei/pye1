@@ -9,10 +9,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_UTILS_WRAPPER_H
-#define __SRC_UTILS_WRAPPER_H
+#ifndef __SRC_ENGINE_WRAPPER_H
+#define __SRC_ENGINE_WRAPPER_H
 
-#include "../include/sys.h"
+#include "sys.h"
 
 void *operator new(size_t size);
 

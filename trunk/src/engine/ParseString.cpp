@@ -10,7 +10,7 @@
 //
 //
 #include "ParseString.h"
-#include "../utils/output.h"
+#include "output.h"
 #define MAX_PINYINLEN 6
 
 /**

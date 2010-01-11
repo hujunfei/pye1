@@ -13,8 +13,8 @@
 #include "ParseString.h"
 #include "InquireSysPhrase.h"
 #include "InquireUserPhrase.h"
-#include "../utils/output.h"
-#include "../utils/support.h"
+#include "output.h"
+#include "support.h"
 
 /**
  * @name 相关底层数据的构造函数&析构函数.

@@ -10,8 +10,8 @@
 //
 //
 #include "InquireSysPhrase.h"
-#include "../utils/wrapper.h"
-#include "../utils/output.h"
+#include "wrapper.h"
+#include "output.h"
 
 /**
  * @name 相关底层数据的构造函数&析构函数.

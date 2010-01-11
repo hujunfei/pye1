@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.63)
 AC_INIT(configure.in)
-AC_CONFIG_SRCDIR(src/pye.cpp)
+AC_CONFIG_SRCDIR(src)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(pye, 0.1.0)
 
@@ -57,5 +57,4 @@ PACKAGE_LIBS="${GLIB_LIBS}"
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
-AC_OUTPUT(Makefile src/Makefile src/engine/Makefile src/include/Makefile \
-	src/tools/Makefile src/utils/Makefile)
+AC_OUTPUT(Makefile src/Makefile src/engine/Makefile src/tools/Makefile src/test/Makefile)

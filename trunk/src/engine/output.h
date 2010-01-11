@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_UTILS_OUTPUT_H
-#define __SRC_UTILS_OUTPUT_H
+#ifndef __SRC_ENGINE_OUTPUT_H
+#define __SRC_ENGINE_OUTPUT_H
 
 /* 警告信息输出 */
 #ifndef WARNING

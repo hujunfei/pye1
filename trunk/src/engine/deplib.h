@@ -9,8 +9,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_INCLUDE_DEPLIB_H
-#define __SRC_INCLUDE_DEPLIB_H
+#ifndef __SRC_ENGINE_DEPLIB_H
+#define __SRC_ENGINE_DEPLIB_H
 
 #include <glib.h>
 

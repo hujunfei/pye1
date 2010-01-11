@@ -9,10 +9,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
-#ifndef __SRC_UTILS_SUPPORT_H
-#define __SRC_UTILS_SUPPORT_H
+#ifndef __SRC_ENGINE_SUPPORT_H
+#define __SRC_ENGINE_SUPPORT_H
 
-#include "../include/sys.h"
+#include "sys.h"
 
 #define FLAG_ISSET(num,bit) ((num)&(1<<(bit)))
 #define FLAG_SET(num,bit) ((num)|=(1<<(bit)))

@@ -12,8 +12,8 @@
 #ifndef __SRC_ENGINE_MESS_H
 #define __SRC_ENGINE_MESS_H
 
-#include "../include/sys.h"
-#include "../include/deplib.h"
+#include "sys.h"
+#include "deplib.h"
 
 /**
  * 汉字索引结构.

@@ -10,7 +10,7 @@
 //
 //
 #include "InquireUserPhrase.h"
-#include "../utils/wrapper.h"
+#include "wrapper.h"
 
 /**
  * @name 相关底层数据的构造函数&析构函数.
