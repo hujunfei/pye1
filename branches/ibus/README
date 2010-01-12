@@ -1,4 +1,0 @@
-configure
-configure.in
-src/Makefile.in
-src/Makefile.am

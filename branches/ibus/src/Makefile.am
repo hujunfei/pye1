@@ -2,7 +2,7 @@ METASOURCES = AUTO
 libexec_PROGRAMS = ibus-pye
 
 ibus_pye_SOURCES = EngineConfig.cpp EngineObject.cpp HalfFullConverter.cpp PinyinEngine.cpp \
-	main.cpp
+	ibus-pye.cpp
 
 AM_CXXFLAGS = -Wall
 
@@ -13,11 +13,11 @@ INCLUDES= $(all_includes) @PACKAGE_CFLAGS@ \
 
 # the library search path.
 ibus_pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
-ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a utils/libutils.a
+ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a
 
 noinst_HEADERS = EngineConfig.h EngineObject.h HalfFullConverter.h PinyinEngine.h
 
-SUBDIRS = include utils engine tools
+SUBDIRS = engine tools
 
 componentdir = $(datadir)/ibus/component
 component_DATA = pye.xml
