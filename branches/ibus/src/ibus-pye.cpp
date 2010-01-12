@@ -70,7 +70,7 @@ static void start_component()
 					 "zh_CN",
 					 "GPL 2+",
 					 "Jally jallyx@163.com",
-					 PKGDATADIR "/icons/pye.png",
+					 __ICON_PATH "/pye.png",
 					 "us");
 		ibus_component_add_engine(component, desc);
 		ibus_bus_register_component(bus, component);
@@ -84,7 +84,7 @@ static void init_phrase_engine()
 	char path[1024];
 
 	phrengine = PhraseEngine::GetInstance();
-	phrengine->CreateSysEngineUnits(PKGDATADIR "/data/config.txt");
+	phrengine->CreateSysEngineUnits(__DATA_PATH "/config.txt");
 	env = g_get_home_dir();
 	snprintf(path, 1024, "%s/.ibus", env);
 	if (access(path, F_OK) != 0)

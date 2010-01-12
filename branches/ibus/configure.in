@@ -51,6 +51,17 @@ if test "${enable_trace}" = yes ; then
 AC_DEFINE(TRACE)
 fi
 
+dnl In Autoconf 2.63, ${libexecdir} --> ${exec_prefix}
+dnl In Autoconf 2.63, ${datadir} --> ${datarootdir} --> ${prefix}
+test "x${prefix}" = xNONE && prefix="${ac_default_prefix}"
+test "x${exec_prefix}" = xNONE && exec_prefix="${prefix}"
+tmpdir=`eval echo ${libexecdir}`
+AC_DEFINE_UNQUOTED(__LIBEXEC_PATH, "${tmpdir}")
+tmpdir=`eval echo ${datadir}`
+tmpdir=`eval echo ${tmpdir}`
+AC_DEFINE_UNQUOTED(__ICON_PATH, "${tmpdir}/ibus-pye/icons")
+AC_DEFINE_UNQUOTED(__DATA_PATH, "${tmpdir}/ibus-pye/data")
+
 glib_modules="glib-2.0 >= 2.16.0"
 PKG_CHECK_MODULES(GLIB, [$glib_modules])
 ibus_modules="ibus-1.0 >= 1.2.0"

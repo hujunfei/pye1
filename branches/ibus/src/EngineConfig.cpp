@@ -17,6 +17,7 @@
 #define CONFIG_NAME_BAKGAP "backup_gap"
 #define CONFIG_NAME_PAGE "page_size"
 #define CONFIG_NAME_FLAGS "bit_flags"
+#define CONFIG_NAME_EOF "--EOF--"
 
 /**
  * 类构造函数.
@@ -154,7 +155,8 @@ void EngineConfig::UpdateBackupGap()
 	g_value_init(&value, G_TYPE_INT);
 	if (ibus_config_get_value(busconfig, CONFIG_SECTION,
 				 CONFIG_NAME_BAKGAP, &value)) {
-		bakgap = g_value_get_int(&value);
+		if ((bakgap = g_value_get_int(&value)) < 30)
+			bakgap = 30;
 		if (timerid != 0)
 			g_source_remove(timerid);
 		timerid = g_timeout_add_seconds(bakgap,
@@ -170,8 +172,10 @@ void EngineConfig::UpdatePageSize()
 	GValue value = {0};
 
 	g_value_init(&value, G_TYPE_UINT);
-	if (ibus_config_get_value(busconfig, CONFIG_SECTION, CONFIG_NAME_PAGE, &value))
-		pagesize = g_value_get_uint(&value);
+	if (ibus_config_get_value(busconfig, CONFIG_SECTION, CONFIG_NAME_PAGE, &value)) {
+		if ((pagesize = g_value_get_uint(&value)) < 5)
+			pagesize = 5;
+	}
 }
 
 /**
@@ -260,31 +264,20 @@ void EngineConfig::UpdatePhraseEngineFuzzyPinyinUnit()
 void EngineConfig::ConfigDataChanged(EngineConfig *config, gchar *section,
 						 gchar *name, GValue *value)
 {
-	bool notify;
-
-	/* 预设为不需要通知监听者 */
-	notify = false;
-
-	/* 根据变更获取相对应的配置数据 */
 	if (strcmp(section, CONFIG_SECTION) == 0) {
-		if (strcmp(name, CONFIG_NAME_RECTIFY) == 0) {
+		if (strcmp(name, CONFIG_NAME_RECTIFY) == 0)
 			config->UpdateRectifyPinyinPair();
-		} else if (strcmp(name, CONFIG_NAME_FUZZY) == 0) {
+		else if (strcmp(name, CONFIG_NAME_FUZZY) == 0)
 			config->UpdateFuzzyPinyinUnit();
-		} else if (strcmp(name, CONFIG_NAME_BAKGAP) == 0) {
+		else if (strcmp(name, CONFIG_NAME_BAKGAP) == 0)
 			config->UpdateBackupGap();
-		} else if (strcmp(name, CONFIG_NAME_PAGE) == 0) {
+		else if (strcmp(name, CONFIG_NAME_PAGE) == 0)
 			config->UpdatePageSize();
-			notify = true;
-		} else if (strcmp(name, CONFIG_NAME_FLAGS) == 0) {
+		else if (strcmp(name, CONFIG_NAME_FLAGS) == 0)
 			config->UpdateBitFlags();
-			notify = true;
-		}
+		else if (strcmp(name, CONFIG_NAME_EOF) == 0)
+			config->NotifyListener();
 	}
-
-	/* 如果需要则通知监听者 */
-	if (notify)
-		config->NotifyListener();
 }
 
 /**

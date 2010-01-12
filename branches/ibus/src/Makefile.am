@@ -7,9 +7,7 @@ ibus_pye_SOURCES = EngineConfig.cpp EngineObject.cpp HalfFullConverter.cpp Pinyi
 AM_CXXFLAGS = -Wall
 
 # set the include path found by configure
-INCLUDES= $(all_includes) @PACKAGE_CFLAGS@ \
-	-DPKGDATADIR=\"$(pkgdatadir)\" \
-	-DLIBEXECDIR=\"$(libexecdir)\"
+INCLUDES= $(all_includes) @PACKAGE_CFLAGS@
 
 # the library search path.
 ibus_pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@

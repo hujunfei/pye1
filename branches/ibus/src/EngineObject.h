@@ -12,7 +12,7 @@
 #ifndef __SRC_ENGINEOBJECT_H
 #define __SRC_ENGINEOBJECT_H
 
-#include "include/deplib.h"
+#include "engine/deplib.h"
 
 #define IBUS_TYPE_PINYIN_ENGINE \
 	ibus_pinyin_engine_get_type()

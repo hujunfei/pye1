@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -31,10 +32,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-<<<<<<< .working
 libexec_PROGRAMS = ibus-pye$(EXEEXT)
-=======
->>>>>>> .merge-right.r77
 subdir = src
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/pye.xml.in.in
@@ -45,22 +43,20 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = pye.xml.in
-<<<<<<< .working
-CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(componentdir)"
+libexecPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(libexec_PROGRAMS)
 am_ibus_pye_OBJECTS = EngineConfig.$(OBJEXT) EngineObject.$(OBJEXT) \
 	HalfFullConverter.$(OBJEXT) PinyinEngine.$(OBJEXT) \
-	main.$(OBJEXT)
+	ibus-pye.$(OBJEXT)
 ibus_pye_OBJECTS = $(am_ibus_pye_OBJECTS)
-ibus_pye_DEPENDENCIES = engine/libengine.a utils/libutils.a
+ibus_pye_DEPENDENCIES = engine/libengine.a
 ibus_pye_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(ibus_pye_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -68,10 +64,6 @@ CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(ibus_pye_SOURCES)
 DIST_SOURCES = $(ibus_pye_SOURCES)
-=======
-SOURCES =
-DIST_SOURCES =
->>>>>>> .merge-right.r77
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -84,22 +76,8 @@ am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
     *) f=$$p;; \
   esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+componentDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(component_DATA)
 HEADERS = $(noinst_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
@@ -207,26 +185,19 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 METASOURCES = AUTO
-<<<<<<< .working
 ibus_pye_SOURCES = EngineConfig.cpp EngineObject.cpp HalfFullConverter.cpp PinyinEngine.cpp \
-	main.cpp
+	ibus-pye.cpp
 
 AM_CXXFLAGS = -Wall
 
 # set the include path found by configure
-INCLUDES = $(all_includes) @PACKAGE_CFLAGS@ \
-	-DPKGDATADIR=\"$(pkgdatadir)\" \
-	-DLIBEXECDIR=\"$(libexecdir)\"
-
+INCLUDES = $(all_includes) @PACKAGE_CFLAGS@
 
 # the library search path.
 ibus_pye_LDFLAGS = $(all_libraries) @PACKAGE_LIBS@
-ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a utils/libutils.a
+ibus_pye_LDADD = $(INTLLIBS) engine/libengine.a
 noinst_HEADERS = EngineConfig.h EngineObject.h HalfFullConverter.h PinyinEngine.h
-SUBDIRS = include utils engine tools
-=======
-SUBDIRS = engine tools test
->>>>>>> .merge-right.r77
+SUBDIRS = engine tools
 componentdir = $(datadir)/ibus/component
 component_DATA = pye.xml
 CLEANFILES = pye.xml
@@ -234,6 +205,7 @@ EXTRA_DIST = pye.xml.in
 all: all-recursive
 
 .SUFFIXES:
+.SUFFIXES: .cpp .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -243,9 +215,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  src/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/Makefile
+	  $(AUTOMAKE) --foreign  src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -263,47 +235,28 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-<<<<<<< .working
-$(am__aclocal_m4_deps):
 pye.xml.in: $(top_builddir)/config.status $(srcdir)/pye.xml.in.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
-	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p; \
-	  then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(libexecdir)$$dir'"; \
-	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(libexecdir)$$dir" || exit $$?; \
-	    } \
-	; done
-=======
->>>>>>> .merge-right.r77
+	@list='$(libexec_PROGRAMS)'; for p in $$list; do \
+	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  if test -f $$p \
+	  ; then \
+	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(libexecPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(libexecdir)/$$f'"; \
+	   $(INSTALL_PROGRAM_ENV) $(libexecPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(libexecdir)/$$f" || exit 1; \
+	  else :; fi; \
+	done
 
-<<<<<<< .working
 uninstall-libexecPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' `; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(libexecdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(libexecdir)" && rm -f $$files
+	@list='$(libexec_PROGRAMS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
+	  echo " rm -f '$(DESTDIR)$(libexecdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(libexecdir)/$$f"; \
+	done
 
 clean-libexecPROGRAMS:
 	-test -z "$(libexec_PROGRAMS)" || rm -f $(libexec_PROGRAMS)
@@ -321,43 +274,38 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EngineObject.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HalfFullConverter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PinyinEngine.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ibus-pye.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
 
 .cpp.obj:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 install-componentDATA: $(component_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(componentdir)" || $(MKDIR_P) "$(DESTDIR)$(componentdir)"
-	@list='$(component_DATA)'; test -n "$(componentdir)" || list=; \
-	for p in $$list; do \
+	@list='$(component_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(componentdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(componentdir)" || exit $$?; \
+	  f=$(am__strip_dir) \
+	  echo " $(componentDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(componentdir)/$$f'"; \
+	  $(componentDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(componentdir)/$$f"; \
 	done
 
-=======
->>>>>>> .merge-right.r77
 uninstall-componentDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(component_DATA)'; test -n "$(componentdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(componentdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(componentdir)" && rm -f $$files
+	@list='$(component_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(componentdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(componentdir)/$$f"; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -534,19 +482,12 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-<<<<<<< .working
 all-am: Makefile $(PROGRAMS) $(DATA) $(HEADERS)
-=======
-all-am: Makefile
->>>>>>> .merge-right.r77
 installdirs: installdirs-recursive
 installdirs-am:
-<<<<<<< .working
 	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(componentdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-=======
->>>>>>> .merge-right.r77
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -574,15 +515,13 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-<<<<<<< .working
 clean-am: clean-generic clean-libexecPROGRAMS mostlyclean-am
-=======
-clean-am: clean-generic mostlyclean-am
->>>>>>> .merge-right.r77
 
 distclean: distclean-recursive
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-tags
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-tags
 
 dvi: dvi-recursive
 
@@ -598,13 +537,8 @@ install-data-am: install-componentDATA
 
 install-dvi: install-dvi-recursive
 
-install-exec-am:
-
-<<<<<<< .working
 install-exec-am: install-libexecPROGRAMS
 
-=======
->>>>>>> .merge-right.r77
 install-html: install-html-recursive
 
 install-info: install-info-recursive
@@ -618,12 +552,13 @@ install-ps: install-ps-recursive
 installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-generic
+mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
 pdf: pdf-recursive
 
@@ -633,30 +568,18 @@ ps: ps-recursive
 
 ps-am:
 
-<<<<<<< .working
 uninstall-am: uninstall-componentDATA uninstall-libexecPROGRAMS
-=======
-uninstall-am:
->>>>>>> .merge-right.r77
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
 	install-strip
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-<<<<<<< .working
 	all all-am check check-am clean clean-generic \
 	clean-libexecPROGRAMS ctags ctags-recursive distclean \
 	distclean-compile distclean-generic distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-componentDATA install-data install-data-am install-dvi \
-=======
-	all all-am check check-am clean clean-generic ctags \
-	ctags-recursive distclean distclean-generic distclean-tags \
-	distdir dvi dvi-am html html-am info info-am install \
-	install-am install-data install-data-am install-dvi \
->>>>>>> .merge-right.r77
 	install-dvi-am install-exec install-exec-am install-html \
-<<<<<<< .working
 	install-html-am install-info install-info-am \
 	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
@@ -665,16 +588,7 @@ uninstall-am:
 	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-componentDATA \
 	uninstall-libexecPROGRAMS
-=======
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am tags \
-	tags-recursive uninstall uninstall-am
->>>>>>> .merge-right.r77
 
-<<<<<<< .working
 pye.xml: pye.xml.in
 	( \
 		libexecdir=${libexecdir}; \
@@ -682,9 +596,6 @@ pye.xml: pye.xml.in
 		s=`cat $<`; \
 		eval "echo \"$${s}\""; \
 	) > $@
-
-=======
->>>>>>> .merge-right.r77
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
