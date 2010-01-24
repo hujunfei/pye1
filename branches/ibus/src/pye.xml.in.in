@@ -3,7 +3,7 @@
 <component>
 	<name>org.freedesktop.IBus.Pye</name>
 	<description>Pye Component</description>
-	<exec>${libexecdir}/ibus-pye --ibus</exec>
+	<exec>${libexecdir}/ibus-engine-pye --ibus</exec>
 	<version>@VERSION@</version>
 	<author>Jally &lt;jallyx@163.com&gt;</author>
 	<license>GPL 2+</license>

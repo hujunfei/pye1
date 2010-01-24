@@ -23,7 +23,7 @@
  * 类构造函数.
  */
 EngineConfig::EngineConfig(): busconfig(NULL), pyegnlist(NULL),
- timerid(0), rtfstrv(NULL), fzstrv(NULL), bakgap(60), pagesize(5),
+ timerid(0), rtfstr(NULL), fzstr(NULL), bakgap(60), pagesize(5),
  flags(~0)
 {
 }
@@ -38,8 +38,8 @@ EngineConfig::~EngineConfig()
 	g_slist_free(pyegnlist);
 	if (timerid != 0)
 		g_source_remove(timerid);
-	g_strfreev(rtfstrv);
-	g_strfreev(fzstrv);
+	g_free(rtfstr);
+	g_free(fzstr);
 }
 
 /**
@@ -86,11 +86,11 @@ void EngineConfig::SetConnection(IBusConnection *conn)
 			 G_CALLBACK(ConfigDataChanged), this);
 
 	/* 更新配置数据 */
-	UpdateRectifyPinyinPair();
-	UpdateFuzzyPinyinUnit();
-	UpdateBackupGap();
-	UpdatePageSize();
-	UpdateBitFlags();
+	UpdateRectifyPinyinPair(NULL);
+	UpdateFuzzyPinyinUnit(NULL);
+	UpdateBackupGap(NULL);
+	UpdatePageSize(NULL);
+	UpdateBitFlags(NULL);
 
 	/* 通知数据监听者 */
 	NotifyListener();
@@ -109,85 +109,115 @@ guint EngineConfig::GetPageSize()
  * 获取相关位标记.
  * @return 位标记
  */
-uint8_t EngineConfig::GetBitFlags()
+guint8 EngineConfig::GetBitFlags()
 {
 	return flags;
 }
 
 /**
  * 更新拼音修正对.
+ * @param value 最新拼音修正对数据
+ * @note 如果(value==NULL)则表明数据需要临时获取
  */
-void EngineConfig::UpdateRectifyPinyinPair()
+void EngineConfig::UpdateRectifyPinyinPair(GValue *value)
 {
-	GValue value = {0};
+	GValue localvalue = {0};
+	GValue *pvalue;
 
-	g_value_init(&value, G_TYPE_STRV);
-	if (ibus_config_get_value(busconfig, CONFIG_SECTION,
-				 CONFIG_NAME_RECTIFY, &value)) {
-		g_strfreev(rtfstrv);
-		if ( (rtfstrv = (gchar **)g_value_get_boxed(&value)))
-			UpdatePhraseEngineRectifyPinyinPair();
+	if (value || ibus_config_get_value(busconfig, CONFIG_SECTION,
+				 CONFIG_NAME_RECTIFY, &localvalue)) {
+		pvalue = value ? value : &localvalue;
+		g_free(rtfstr);
+		rtfstr = g_value_dup_string(pvalue);
+		UpdatePhraseEngineRectifyPinyinPair();
+		if (!value)
+			g_value_unset(&localvalue);
 	}
+
 }
 
 /**
  * 更新模糊拼音单元.
+ * @param value 最新模糊拼音单元数据
+ * @note 如果(value==NULL)则表明数据需要临时获取
  */
-void EngineConfig::UpdateFuzzyPinyinUnit()
+void EngineConfig::UpdateFuzzyPinyinUnit(GValue *value)
 {
-	GValue value = {0};
+	GValue localvalue = {0};
+	GValue *pvalue;
 
-	g_value_init(&value, G_TYPE_STRV);
-	if (ibus_config_get_value(busconfig, CONFIG_SECTION, CONFIG_NAME_FUZZY, &value)) {
-		g_strfreev(fzstrv);
-		if ( (fzstrv = (gchar **)g_value_get_boxed(&value)))
-			UpdatePhraseEngineFuzzyPinyinUnit();
+	if (value || ibus_config_get_value(busconfig, CONFIG_SECTION,
+				 CONFIG_NAME_FUZZY, &localvalue)) {
+		pvalue = value ? value : &localvalue;
+		g_free(fzstr);
+		fzstr = g_value_dup_string(pvalue);
+		UpdatePhraseEngineFuzzyPinyinUnit();
+		if (!value)
+			g_value_unset(&localvalue);
 	}
 }
 
 /**
  * 更新备份用户词语的时间间隔.
+ * @param value 最新备份时间间隔数据
+ * @note 如果(value==NULL)则表明数据需要临时获取
  */
-void EngineConfig::UpdateBackupGap()
+void EngineConfig::UpdateBackupGap(GValue *value)
 {
-	GValue value = {0};
+	GValue localvalue = {0};
+	GValue *pvalue;
 
-	g_value_init(&value, G_TYPE_INT);
-	if (ibus_config_get_value(busconfig, CONFIG_SECTION,
-				 CONFIG_NAME_BAKGAP, &value)) {
-		if ((bakgap = g_value_get_int(&value)) < 30)
+	if (value || ibus_config_get_value(busconfig, CONFIG_SECTION,
+				 CONFIG_NAME_BAKGAP, &localvalue)) {
+		pvalue = value ? value : &localvalue;
+		if ((bakgap = g_value_get_int(pvalue)) < 30)
 			bakgap = 30;
 		if (timerid != 0)
 			g_source_remove(timerid);
 		timerid = g_timeout_add_seconds(bakgap,
 				 GSourceFunc(BakUserPhraseData), NULL);
+		if (!value)
+			g_value_unset(&localvalue);
 	}
 }
 
 /**
  * 更新查询表页面大小.
+ * @param value 最新页面大小数据
+ * @note 如果(value==NULL)则表明数据需要临时获取
  */
-void EngineConfig::UpdatePageSize()
+void EngineConfig::UpdatePageSize(GValue *value)
 {
-	GValue value = {0};
+	GValue localvalue = {0};
+	GValue *pvalue;
 
-	g_value_init(&value, G_TYPE_UINT);
-	if (ibus_config_get_value(busconfig, CONFIG_SECTION, CONFIG_NAME_PAGE, &value)) {
-		if ((pagesize = g_value_get_uint(&value)) < 5)
-			pagesize = 5;
+	if (value || ibus_config_get_value(busconfig, CONFIG_SECTION,
+				 CONFIG_NAME_PAGE, &localvalue)) {
+		pvalue = value ? value : &localvalue;
+		if ((pagesize = g_value_get_int(pvalue)) < 3)
+			pagesize = 3;
+		if (!value)
+			g_value_unset(&localvalue);
 	}
 }
 
 /**
  * 更新相关标记位.
+ * @param value 最新标记位数据
+ * @note 如果(value==NULL)则表明数据需要临时获取
  */
-void EngineConfig::UpdateBitFlags()
+void EngineConfig::UpdateBitFlags(GValue *value)
 {
-	GValue value = {0};
+	GValue localvalue = {0};
+	GValue *pvalue;
 
-	g_value_init(&value, G_TYPE_UCHAR);
-	if (ibus_config_get_value(busconfig, CONFIG_SECTION, CONFIG_NAME_FLAGS, &value))
-		flags = g_value_get_uchar(&value);
+	if (value || ibus_config_get_value(busconfig, CONFIG_SECTION,
+				 CONFIG_NAME_FLAGS, &localvalue)) {
+		pvalue = value ? value : &localvalue;
+		flags = g_value_get_int(pvalue);
+		if (!value)
+			g_value_unset(&localvalue);
+	}
 }
 
 /**
@@ -207,51 +237,55 @@ void EngineConfig::NotifyListener()
 /**
  * 更新词语查询引擎的拼音修正对.
  * 拼音修正对之间以'|'作为分割，e.g."ign|ing" \n
+ *
  */
 void EngineConfig::UpdatePhraseEngineRectifyPinyinPair()
 {
 	PhraseEngine *phrengine;
-	gchar **pstr, *pinyin1, *pinyin2;
-	const gchar *ptr;
+	gchar *tptr, *pptr, *ptr;
 
 	phrengine = PhraseEngine::GetInstance();
 	phrengine->ClearRectifyPinyinPair();
-	pstr = rtfstrv;
-	while (*pstr) {
-		if ((ptr = strchr(*pstr, '|')) && (*pstr != ptr) && *(ptr + 1)) {
-			pinyin1 = g_strndup(*pstr, ptr - *pstr);
-			pinyin2 = g_strndup(ptr + 1, strlen(ptr + 1));
-			phrengine->AddRectifyPinyinPair(pinyin1, pinyin2);
-			g_free(pinyin1);
-			g_free(pinyin2);
+	if (!rtfstr || *rtfstr == '\0')
+		return;
+	pptr = rtfstr;
+	do {
+		ptr = strchr(pptr, ';');
+		pptr = g_strndup(pptr, ptr ? ptr - pptr : strlen(pptr));
+		if ((tptr = strchr(pptr, '|')) && tptr != pptr && *(tptr + 1) != '\0') {
+			*tptr = '\0';
+			phrengine->AddRectifyPinyinPair(pptr, tptr + 1);
 		}
-		pstr++;
-	}
+		g_free(pptr);
+		pptr = ptr + 1;
+	} while (ptr && *pptr != '\0');
 }
 
 /**
  * 更新词语查询引擎的模糊拼音单元.
  * 模糊拼音单元之间以'|'作为分割，e.g."zh|z" \n
+ *
  */
 void EngineConfig::UpdatePhraseEngineFuzzyPinyinUnit()
 {
 	PhraseEngine *phrengine;
-	gchar **pstr, *unit1, *unit2;
-	const gchar *ptr;
+	gchar *tptr, *pptr, *ptr;
 
 	phrengine = PhraseEngine::GetInstance();
 	phrengine->ClearFuzzyPinyinUnit();
-	pstr = fzstrv;
-	while (*pstr) {
-		if ((ptr = strchr(*pstr, '|')) && (*pstr != ptr) && *(ptr + 1)) {
-			unit1 = g_strndup(*pstr, ptr - *pstr);
-			unit2 = g_strndup(ptr + 1, strlen(ptr + 1));
-			phrengine->AddFuzzyPinyinUnit(unit1, unit2);
-			g_free(unit1);
-			g_free(unit2);
+	if (!fzstr || *fzstr == '\0')
+		return;
+	pptr = fzstr;
+	do {
+		ptr = strchr(pptr, ';');
+		pptr = g_strndup(pptr, ptr ? ptr - pptr : strlen(pptr));
+		if ((tptr = strchr(pptr, '|')) && tptr != pptr && *(tptr + 1) != '\0') {
+			*tptr = '\0';
+			phrengine->AddFuzzyPinyinUnit(pptr, tptr + 1);
 		}
-		pstr++;
-	}
+		g_free(pptr);
+		pptr = ptr + 1;
+	} while (ptr && *pptr != '\0');
 }
 
 /**
@@ -266,15 +300,15 @@ void EngineConfig::ConfigDataChanged(EngineConfig *config, gchar *section,
 {
 	if (strcmp(section, CONFIG_SECTION) == 0) {
 		if (strcmp(name, CONFIG_NAME_RECTIFY) == 0)
-			config->UpdateRectifyPinyinPair();
+			config->UpdateRectifyPinyinPair(value);
 		else if (strcmp(name, CONFIG_NAME_FUZZY) == 0)
-			config->UpdateFuzzyPinyinUnit();
+			config->UpdateFuzzyPinyinUnit(value);
 		else if (strcmp(name, CONFIG_NAME_BAKGAP) == 0)
-			config->UpdateBackupGap();
+			config->UpdateBackupGap(value);
 		else if (strcmp(name, CONFIG_NAME_PAGE) == 0)
-			config->UpdatePageSize();
+			config->UpdatePageSize(value);
 		else if (strcmp(name, CONFIG_NAME_FLAGS) == 0)
-			config->UpdateBitFlags();
+			config->UpdateBitFlags(value);
 		else if (strcmp(name, CONFIG_NAME_EOF) == 0)
 			config->NotifyListener();
 	}

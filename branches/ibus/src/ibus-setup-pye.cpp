@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Jally   *
+ *   Copyright (C) 2010 by Jally   *
  *   jallyx@163.com   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,8 +17,32 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#include "engine/deplib.h"
+#include "engine/sys.h"
+#include "DataSettings.h"
 
 int main(gint argc, gchar *argv[])
 {
+	IBusBus *bus;
+	IBusConnection *conn;
+	DataSettings dtsettings;
+
+	ibus_init();
+	gtk_init(&argc, &argv);
+
+	/* 保证当前只有一个实例在运行 */
+	bus = ibus_bus_new();
+	if (!ibus_bus_request_name(bus, "org.freedesktop.IBus.Pye.Settings", 0))
+		exit(0);
+
+	/* 创建数据配置对话框，并运行 */
+	gtk_window_set_default_icon_from_file(__ICON_PATH "/pye.png", NULL);
+	conn = ibus_bus_get_connection(bus);
+	dtsettings.ResetDataEntry(conn);
+
+	/* 释放资源 */
+	ibus_bus_release_name(bus, "org.freedesktop.IBus.Pye.Settings");
+	g_object_unref(bus);
+
 	return 0;
 }

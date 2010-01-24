@@ -181,7 +181,7 @@ void PinyinEngine::PropertyActivate(const gchar *prop_name, guint prop_state)
 		ToggleModeFullLetter();
 	else if (strcmp(prop_name, "mode.full_punct") == 0)
 		ToggleModeFullPunct();
-	else if (strcmp(prop_name, "setup"))
+	else if (strcmp(prop_name, "engine.setup") == 0)
 		ShowSetupDialog();
 }
 
@@ -327,7 +327,7 @@ IBusPropList *PinyinEngine::CreateProperty()
 	g_object_unref(property);
 
 	/* 细节设置 */
-	property = ibus_property_new("setup",
+	property = ibus_property_new("engine.setup",
 			 PROP_TYPE_NORMAL,
 			 ibus_text_new_from_static_string("Pinyin preferences"),
 			 "gtk-preferences",
@@ -407,7 +407,7 @@ void PinyinEngine::ToggleModeFullLetter()
 /**
  * 切换标点全/半角模式.
  */
-void PinyinEngine::ToggleModeFullPunct ()
+void PinyinEngine::ToggleModeFullPunct()
 {
 	IBusProperty *property;
 	IBusText *text;
@@ -424,7 +424,7 @@ void PinyinEngine::ToggleModeFullPunct ()
 /**
  * 显示设置对话框.
  */
-void PinyinEngine::ShowSetupDialog ()
+void PinyinEngine::ShowSetupDialog()
 {
 	g_spawn_command_line_async(__LIBEXEC_PATH "/ibus-setup-pye", NULL);
 }

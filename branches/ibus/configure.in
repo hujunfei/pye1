@@ -64,10 +64,12 @@ AC_DEFINE_UNQUOTED(__DATA_PATH, "${tmpdir}/ibus-pye/data")
 
 glib_modules="glib-2.0 >= 2.16.0"
 PKG_CHECK_MODULES(GLIB, [$glib_modules])
+gtk_modules="gtk+-2.0 >= 2.12.0"
+PKG_CHECK_MODULES(GTK, [$gtk_modules])
 ibus_modules="ibus-1.0 >= 1.2.0"
 PKG_CHECK_MODULES(IBUS, [$ibus_modules])
-PACKAGE_CFLAGS="${GLIB_CFLAGS} ${IBUS_CFLAGS}"
-PACKAGE_LIBS="${GLIB_LIBS} ${IBUS_LIBS}"
+PACKAGE_CFLAGS="${GLIB_CFLAGS} ${GTK_CFLAGS} ${IBUS_CFLAGS}"
+PACKAGE_LIBS="${GLIB_LIBS} ${GTK_LIBS} ${IBUS_LIBS}"
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 

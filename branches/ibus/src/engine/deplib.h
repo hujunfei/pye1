@@ -13,6 +13,7 @@
 #define __SRC_ENGINE_DEPLIB_H
 
 #include <glib.h>
+#include <gtk/gtk.h>
 #include <ibus.h>
 
 #endif

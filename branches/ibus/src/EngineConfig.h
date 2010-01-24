@@ -26,13 +26,13 @@ public:
 	void RemoveListener(PinyinEngine *pyegn);
 	void SetConnection(IBusConnection *conn);
 	guint GetPageSize();
-	uint8_t GetBitFlags();
+	guint8 GetBitFlags();
 private:
-	void UpdateRectifyPinyinPair();
-	void UpdateFuzzyPinyinUnit();
-	void UpdateBackupGap();
-	void UpdatePageSize();
-	void UpdateBitFlags();
+	void UpdateRectifyPinyinPair(GValue *value);
+	void UpdateFuzzyPinyinUnit(GValue *value);
+	void UpdateBackupGap(GValue *value);
+	void UpdatePageSize(GValue *value);
+	void UpdateBitFlags(GValue *value);
 
 	void NotifyListener();
 	void UpdatePhraseEngineRectifyPinyinPair();
@@ -42,11 +42,11 @@ private:
 	GSList *pyegnlist;	///< 拼音引擎链表
 	guint timerid;	///< 定时器ID
 
-	gchar **rtfstrv;	///< 拼音矫正串表
-	gchar **fzstrv;	///< 模糊拼音对照串表
+	gchar *rtfstr;	///< 拼音矫正串
+	gchar *fzstr;	///< 模糊拼音对照串
 	time_t bakgap;	///< 备份用户词语的间隔
 	guint pagesize;	///< 词语查询表的页面大小
-	uint8_t flags;	///< 3 光标可见,2 合成词汇,1 定义词汇,0 词频调整
+	guint8 flags;	///< 3 光标可见,2 合成词汇,1 定义词汇,0 词频调整
 private:
 	static void ConfigDataChanged(EngineConfig *config, gchar *section,
 						 gchar *name, GValue *value);
