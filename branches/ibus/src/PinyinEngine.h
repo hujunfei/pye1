@@ -20,19 +20,19 @@ public:
 	PinyinEngine(IBusEngine *busegn);
 	~PinyinEngine();
 
-	void UpdateConfig();
-	void EngineReset();
-	void EngineDisable();
 	void EngineEnable();
+	void EngineDisable();
 	void FocusIn();
 	void FocusOut();
-	void CursorDown();
 	void CursorUp();
-	void PageDown();
+	void CursorDown();
 	void PageUp();
-	void PropertyActivate(const gchar *prop_name, guint prop_state);
+	void PageDown();
+	void Reset();
 	void CandidateClicked(guint index, guint button, guint state);
 	gboolean ProcessKeyEvent(guint keyval, guint keycode, guint state);
+	void PropertyActivate(const gchar *prop_name, guint prop_state);
+	void UpdateConfig();
 private:
 	IBusPropList *CreateProperty();
 	void RestoreInitState();

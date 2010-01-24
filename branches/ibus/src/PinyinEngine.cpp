@@ -84,7 +84,7 @@ void PinyinEngine::UpdateConfig()
 /**
  * 引擎被重置.
  */
-void PinyinEngine::EngineReset()
+void PinyinEngine::Reset()
 {
 	ClearEngineUI();
 }
@@ -781,7 +781,7 @@ gboolean PinyinEngine::ProcessOthers(guint keyval, guint keycode, guint state)
 		PageDown();
 		return TRUE;
 	case IBUS_Escape:
-		EngineReset();
+		Reset();
 		return TRUE;
 	}
 

@@ -237,7 +237,7 @@ void EngineConfig::NotifyListener()
 /**
  * 更新词语查询引擎的拼音修正对.
  * 拼音修正对之间以'|'作为分割，e.g."ign|ing" \n
- *
+ * 每两组拼音修正对之间以';'作为分割，e.g."ign|ing;img|ing" \n
  */
 void EngineConfig::UpdatePhraseEngineRectifyPinyinPair()
 {
@@ -264,7 +264,7 @@ void EngineConfig::UpdatePhraseEngineRectifyPinyinPair()
 /**
  * 更新词语查询引擎的模糊拼音单元.
  * 模糊拼音单元之间以'|'作为分割，e.g."zh|z" \n
- *
+ * 每两组模糊拼音单元之间以';'作为分割，e.g."zh|z;ch|c" \n
  */
 void EngineConfig::UpdatePhraseEngineFuzzyPinyinUnit()
 {

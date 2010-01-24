@@ -39,22 +39,22 @@ static void ibus_pinyin_engine_class_init(IBusPinyinEngineClass *klass);
 static void ibus_pinyin_engine_init(IBusPinyinEngine *engine);
 static void ibus_pinyin_engine_destroy(IBusPinyinEngine *engine);
 
-static void ibus_pinyin_engine_disable(IBusEngine *engine);
 static void ibus_pinyin_engine_enable(IBusEngine *engine);
+static void ibus_pinyin_engine_disable(IBusEngine *engine);
 static void ibus_pinyin_engine_focus_in(IBusEngine *engine);
 static void ibus_pinyin_engine_focus_out(IBusEngine *engine);
-static void ibus_pinyin_engine_cursor_down(IBusEngine *engine);
 static void ibus_pinyin_engine_cursor_up(IBusEngine *engine);
-static void ibus_pinyin_engine_page_down(IBusEngine *engine);
+static void ibus_pinyin_engine_cursor_down(IBusEngine *engine);
 static void ibus_pinyin_engine_page_up(IBusEngine *engine);
-static void ibus_pinyin_engine_property_activate(IBusEngine *engine,
-			 const gchar *prop_name, guint prop_state);
+static void ibus_pinyin_engine_page_down(IBusEngine *engine);
+static void ibus_pinyin_engine_reset(IBusEngine *engine);
 static void ibus_pinyin_engine_candidate_clicked(IBusEngine *engine,
 			 guint index, guint button, guint state);
 static gboolean ibus_pinyin_engine_process_key_event(IBusEngine *engine,
 			 guint keyval, guint keycode, guint state);
+static void ibus_pinyin_engine_property_activate(IBusEngine *engine,
+			 const gchar *prop_name, guint prop_state);
 
-static IBusEngineClass *parent_class = NULL;
 GType ibus_pinyin_engine_get_type()
 {
 	static GType type = 0;
@@ -71,36 +71,36 @@ GType ibus_pinyin_engine_get_type()
 			 NULL
 	};
 
-	if (type == 0) {
+	if (type == 0)
 		type = g_type_register_static(IBUS_TYPE_ENGINE,
 					 "IBusPinyinEngine",
 					 &typeinfo,
 					 (GTypeFlags)0);
-	}
 
 	return type;
 }
 
+static IBusEngineClass *parent_class = NULL;
 static void ibus_pinyin_engine_class_init(IBusPinyinEngineClass *klass)
 {
 	IBusObjectClass *ibus_object_class = IBUS_OBJECT_CLASS(klass);
-	IBusEngineClass *engine_class = IBUS_ENGINE_CLASS(klass);
-
+	IBusEngineClass *ibus_engine_class = IBUS_ENGINE_CLASS(klass);
 	parent_class = (IBusEngineClass *)g_type_class_peek_parent(klass);
 
 	ibus_object_class->destroy = (IBusObjectDestroyFunc)ibus_pinyin_engine_destroy;
 
-	engine_class->disable = ibus_pinyin_engine_disable;
-	engine_class->enable = ibus_pinyin_engine_enable;
-	engine_class->focus_in = ibus_pinyin_engine_focus_in;
-	engine_class->focus_out = ibus_pinyin_engine_focus_out;
-	engine_class->cursor_down = ibus_pinyin_engine_cursor_down;
-	engine_class->cursor_up = ibus_pinyin_engine_cursor_up;
-	engine_class->page_down = ibus_pinyin_engine_page_down;
-	engine_class->page_up = ibus_pinyin_engine_page_up;
-	engine_class->property_activate = ibus_pinyin_engine_property_activate;
-	engine_class->candidate_clicked = ibus_pinyin_engine_candidate_clicked;
-	engine_class->process_key_event = ibus_pinyin_engine_process_key_event;
+	ibus_engine_class->enable = ibus_pinyin_engine_enable;
+	ibus_engine_class->disable = ibus_pinyin_engine_disable;
+	ibus_engine_class->focus_in = ibus_pinyin_engine_focus_in;
+	ibus_engine_class->focus_out = ibus_pinyin_engine_focus_out;
+	ibus_engine_class->cursor_up = ibus_pinyin_engine_cursor_up;
+	ibus_engine_class->cursor_down = ibus_pinyin_engine_cursor_down;
+	ibus_engine_class->page_up = ibus_pinyin_engine_page_up;
+	ibus_engine_class->page_down = ibus_pinyin_engine_page_down;
+	ibus_engine_class->reset = ibus_pinyin_engine_reset;
+	ibus_engine_class->candidate_clicked = ibus_pinyin_engine_candidate_clicked;
+	ibus_engine_class->process_key_event = ibus_pinyin_engine_process_key_event;
+	ibus_engine_class->property_activate = ibus_pinyin_engine_property_activate;
 }
 
 static void ibus_pinyin_engine_init(IBusPinyinEngine *engine)
@@ -119,16 +119,16 @@ static void ibus_pinyin_engine_destroy(IBusPinyinEngine *engine)
 	IBUS_OBJECT_CLASS(parent_class)->destroy((IBusObject *)engine);
 }
 
-static void ibus_pinyin_engine_disable(IBusEngine *engine)
-{
-	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
-	pinyin->engine->EngineDisable();
-}
-
 static void ibus_pinyin_engine_enable(IBusEngine *engine)
 {
 	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
 	pinyin->engine->EngineEnable();
+}
+
+static void ibus_pinyin_engine_disable(IBusEngine *engine)
+{
+	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
+	pinyin->engine->EngineDisable();
 }
 
 static void ibus_pinyin_engine_focus_in(IBusEngine *engine)
@@ -143,22 +143,16 @@ static void ibus_pinyin_engine_focus_out(IBusEngine *engine)
 	pinyin->engine->FocusOut();
 }
 
-static void ibus_pinyin_engine_cursor_down(IBusEngine *engine)
-{
-	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
-	pinyin->engine->CursorDown();
-}
-
 static void ibus_pinyin_engine_cursor_up(IBusEngine *engine)
 {
 	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
 	pinyin->engine->CursorUp();
 }
 
-static void ibus_pinyin_engine_page_down(IBusEngine *engine)
+static void ibus_pinyin_engine_cursor_down(IBusEngine *engine)
 {
 	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
-	pinyin->engine->PageDown();
+	pinyin->engine->CursorDown();
 }
 
 static void ibus_pinyin_engine_page_up(IBusEngine *engine)
@@ -167,11 +161,17 @@ static void ibus_pinyin_engine_page_up(IBusEngine *engine)
 	pinyin->engine->PageUp();
 }
 
-static void ibus_pinyin_engine_property_activate(IBusEngine *engine,
-			 const gchar *prop_name, guint prop_state)
+static void ibus_pinyin_engine_page_down(IBusEngine *engine)
 {
 	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
-	pinyin->engine->PropertyActivate(prop_name, prop_state);
+	pinyin->engine->PageDown();
+}
+
+static void ibus_pinyin_engine_reset(IBusEngine *engine)
+{
+//	//最好不要处理此信号
+// 	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
+// 	pinyin->engine->Reset();
 }
 
 static void ibus_pinyin_engine_candidate_clicked(IBusEngine *engine,
@@ -186,4 +186,11 @@ static gboolean ibus_pinyin_engine_process_key_event(IBusEngine *engine,
 {
 	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
 	return pinyin->engine->ProcessKeyEvent(keyval, keycode, state);
+}
+
+static void ibus_pinyin_engine_property_activate(IBusEngine *engine,
+			 const gchar *prop_name, guint prop_state)
+{
+	IBusPinyinEngine *pinyin = (IBusPinyinEngine *)engine;
+	pinyin->engine->PropertyActivate(prop_name, prop_state);
 }

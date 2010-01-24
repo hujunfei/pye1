@@ -514,7 +514,7 @@ void DataSettings::ExtractFuzzyValue()
 		pos += strlen((const gchar *)tlist->data) + 1;
 		tlist = g_slist_next(tlist);
 	}
-	*(fzstr + pos) = '\0';
+	*(fzstr + len) = '\0';
 
 	/* 更新数据 */
 	g_value_init(&value, G_TYPE_STRING);
@@ -561,7 +561,7 @@ void DataSettings::ExtractRectifyValue()
 		pos += strlen((const gchar *)tlist->data) + 1;
 		tlist = g_slist_next(tlist);
 	}
-	*(rtfstr + pos) = '\0';
+	*(rtfstr + len) = '\0';
 
 	/* 更新数据 */
 	g_value_init(&value, G_TYPE_STRING);
