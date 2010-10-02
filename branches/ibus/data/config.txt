@@ -1,2 +1,0 @@
-#format: mbfile priority
-#e.g.: pinyin.mb 20
