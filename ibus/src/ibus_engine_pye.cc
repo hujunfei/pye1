@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ibus.h>
+#include <dynamic_phrase.h>
 #include <phrase_manager.h>
 #include "engine.h"
 #include "parameter.h"
@@ -116,14 +117,15 @@ int mkdirp(const char *pathname, mode_t mode) {
 
 static void init_phrase_engine() {
   PhraseManager *phrase_manager = PhraseManager::GetInstance();
-
   phrase_manager->CreateSystemPhraseProxySite(__PHRASE_PATH "/config.txt");
-
   char path[PATH_MAX];
-  snprintf(path, PATH_MAX, "%s/.cache/ibus/pye", g_get_home_dir());
+  snprintf(path, sizeof(path), "%s/.cache/ibus/pye", g_get_home_dir());
   mkdirp(path, 0777);
-  snprintf(path, PATH_MAX, "%s/.cache/ibus/pye/user.mb", g_get_home_dir());
+  snprintf(path, sizeof(path), "%s/.cache/ibus/pye/user.mb", g_get_home_dir());
   phrase_manager->CreateUserPhraseProxySite(path);
+
+  DynamicPhrase *dynamic_phrase = DynamicPhrase::GetInstance();
+  dynamic_phrase->CreateExpression(__PHRASE_PATH "/data.txt");
 }
 
 int main(gint argc, gchar **argv) {

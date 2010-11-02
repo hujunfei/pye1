@@ -4,7 +4,7 @@
 	<name>org.freedesktop.IBus.Pye</name>
 	<description>Pye Component</description>
 	<exec>${libexecdir}/ibus-engine-pye --ibus</exec>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<author>Jally &lt;jallyx@163.com&gt;</author>
 	<license>GPL 2+</license>
 	<homepage>http://code.google.com/p/pye1</homepage>

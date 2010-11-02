@@ -202,7 +202,6 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-METASOURCES = AUTO
 ibus_engine_pye_SOURCES = engine.cc half_full_converter.cc ibus_engine_pye.cc \
                           parameter.cc pye_engine.cc
 
