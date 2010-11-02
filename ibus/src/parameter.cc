@@ -87,6 +87,7 @@ void Parameter::setConnection(IBusConnection *conn) {
 
   /* 更新配置数据 */
   updatePagesize(NULL);
+  updateSpaceFullpunct(NULL);
   updateCursorVisible(NULL);
   updatePhraseFrequencyAdjustable(NULL);
   updateEnginePhraseSavable(NULL);
