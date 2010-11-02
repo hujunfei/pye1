@@ -325,7 +325,7 @@ void PyeEngine::updateUIData() {
   /* 更新候选字 */
   ibus_lookup_table_clear(lookup_table_);
   appendDynamicPhrase();
-  appendComposePhrase();
+  appendEnginePhrase();
   appendPageCandidate();
   ibus_engine_update_lookup_table(engine_, lookup_table_, TRUE);
 
@@ -392,10 +392,10 @@ void PyeEngine::resetEngine() {
 }
 
 /**
- * 添加合成词语.
+ * 添加引擎词语.
  */
-void PyeEngine::appendComposePhrase() {
-  const PhraseDatum *phrase_datum = pinyin_editor_.GetComposePhrase();
+void PyeEngine::appendEnginePhrase() {
+  const PhraseDatum *phrase_datum = pinyin_editor_.GetEnginePhrase();
   if (!phrase_datum)
     return;
 
@@ -980,7 +980,11 @@ gboolean PyeEngine::processSpace(guint keyval, guint keycode, guint state) {
   }
 
   /* 中文模式，编辑器为空 */
-  commitPunct(keyval);
+  Parameter *parameter = Parameter::getInstance();
+  if (parameter->space_fullpunct_)
+    commitPunct(keyval);
+  else
+    commitFinalChars(keyval);
 
   return TRUE;
 }

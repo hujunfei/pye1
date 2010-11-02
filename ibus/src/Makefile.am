@@ -1,4 +1,3 @@
-METASOURCES = AUTO
 libexec_PROGRAMS = ibus-engine-pye ibus-setup-pye
 
 ibus_engine_pye_SOURCES = engine.cc half_full_converter.cc ibus_engine_pye.cc \

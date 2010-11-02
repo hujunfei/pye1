@@ -1,10 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.65)
-AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(ibus-pye, 0.2.0)
-AM_CONFIG_HEADER(config.h)
+AC_INIT(ibus-pye, 0.2.1)
+AC_CONFIG_SRCDIR(config.h.in)
+AC_CONFIG_HEADERS(config.h)
+AM_INIT_AUTOMAKE(foreign dist-bzip2)
 
 # Checks for programs.
 AC_PROG_CXX
@@ -59,7 +59,8 @@ ibus_modules="ibus-1.0 >= 1.3.0"
 PKG_CHECK_MODULES(IBUS, [$ibus_modules])
 gtk_modules="gtk+-2.0 >= 2.14.0"
 PKG_CHECK_MODULES(GTK, [$gtk_modules])
-pye_modules="pye >= 0.2.0"
+pye_modules="pye >= 0.2.1"
 PKG_CHECK_MODULES(PYE, [$pye_modules])
 
-AC_OUTPUT(Makefile phrase/Makefile pixmaps/Makefile src/Makefile src/pye.xml.in)
+AC_CONFIG_FILES(Makefile phrase/Makefile pixmaps/Makefile src/Makefile src/pye.xml.in)
+AC_OUTPUT

@@ -14,6 +14,7 @@
 
 #define SECTION "engine/pye"
 #define PAGESIZE "pagesize"
+#define SPACE_FULLPUNCT "space_fullpunct"
 #define CURSOR_VISIBLE "cursor_visible"
 #define PHRASE_FREQUENCY_ADJUSTABLE "phrase_frequency_adjustable"
 #define ENGINE_PHRASE_SAVABLE "engine_phrase_savable"
@@ -153,6 +154,15 @@ GtkWidget *ParameterSettings::createRoutine() {
   gtk_spin_button_set_wrap(GTK_SPIN_BUTTON(widget), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 10);
   g_datalist_set_data(&widget_set_, "pagesize-spinbutton-widget", widget);
+
+  /* 全角空格 */
+  hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), hbox, FALSE, FALSE, 0);
+  label = gtk_label_new("中文模式下输入全角空格:");
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 10);
+  widget = gtk_check_button_new();
+  gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 10);
+  g_datalist_set_data(&widget_set_, "space-checkbutton-widget", widget);
 
   /* 光标是否可见 */
   hbox = gtk_hbox_new(FALSE, 0);
@@ -301,6 +311,15 @@ void ParameterSettings::setRoutineValue() {
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "pagesize-spinbutton-widget"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), pagesize);
 
+  /* 设置空格全角 */
+  gboolean space_fullpunct = TRUE;
+  if (ibus_config_get_value(config_, SECTION, SPACE_FULLPUNCT, &value)) {
+    space_fullpunct = g_value_get_boolean(&value);
+    g_value_unset(&value);
+  }
+  widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "space-checkbutton-widget"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), space_fullpunct);
+
   /* 设置光标是否可见 */
   gboolean cursor_visible = TRUE;
   if (ibus_config_get_value(config_, SECTION, CURSOR_VISIBLE, &value)) {
@@ -427,6 +446,14 @@ void ParameterSettings::extractRoutineValue() {
   g_value_init(&value, G_TYPE_INT);
   g_value_set_int(&value, pagesize);
   ibus_config_set_value(config_, SECTION, PAGESIZE, &value);
+  g_value_unset(&value);
+
+  /* 更新空格全角标记 */
+  widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "space-checkbutton-widget"));
+  gboolean space_fullpunct = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  g_value_init(&value, G_TYPE_BOOLEAN);
+  g_value_set_boolean(&value, space_fullpunct);
+  ibus_config_set_value(config_, SECTION, SPACE_FULLPUNCT, &value);
   g_value_unset(&value);
 
   /* 更新光标可见标记 */

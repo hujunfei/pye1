@@ -16,6 +16,7 @@
 
 #define SECTION "engine/pye"
 #define PAGESIZE "pagesize"
+#define SPACE_FULLPUNCT "space_fullpunct"
 #define CURSOR_VISIBLE "cursor_visible"
 #define PHRASE_FREQUENCY_ADJUSTABLE "phrase_frequency_adjustable"
 #define ENGINE_PHRASE_SAVABLE "engine_phrase_savable"
@@ -29,9 +30,10 @@
  * 类构造函数.
  */
 Parameter::Parameter()
-    : pagesize_(5), cursor_visible_(TRUE), phrase_frequency_adjustable_(TRUE),
-      engine_phrase_savable_(TRUE), manual_phrase_savable_(TRUE), config_(NULL),
-      timer_id_(0), mend_data_(NULL), fuzzy_data_(NULL), backup_cycle_(60) {
+    : pagesize_(5), space_fullpunct_(TRUE), cursor_visible_(TRUE),
+      phrase_frequency_adjustable_(TRUE), engine_phrase_savable_(TRUE),
+      manual_phrase_savable_(TRUE), config_(NULL), timer_id_(0),
+      mend_data_(NULL), fuzzy_data_(NULL), backup_cycle_(60) {
 }
 
 /**
@@ -115,6 +117,23 @@ void Parameter::updatePagesize(GValue *value) {
 
   if (pagesize_ < 3)
     pagesize_ = 3;
+}
+
+/**
+ * 更新空格全角标记.
+ * @param value 数值
+ * @note 如果(value==NULL)则表明数值需要临时获取.
+ */
+void Parameter::updateSpaceFullpunct(GValue *value) {
+  if (value) {
+    space_fullpunct_ = g_value_get_boolean(value);
+  } else {
+    GValue local_value = {0};
+    if (ibus_config_get_value(config_, SECTION, SPACE_FULLPUNCT, &local_value)) {
+      space_fullpunct_ = g_value_get_boolean(&local_value);
+      g_value_unset(&local_value);
+    }
+  }
 }
 
 /**
@@ -336,6 +355,8 @@ void Parameter::configChanged(Parameter *object, gchar *section,
   if (strcmp(section, SECTION) == 0) {
     if (strcmp(name, PAGESIZE) == 0)
       object->updatePagesize(value);
+    else if (strcmp(name, SPACE_FULLPUNCT) == 0)
+      object->updateSpaceFullpunct(value);
     else if (strcmp(name, CURSOR_VISIBLE) == 0)
       object->updateCursorVisible(value);
     else if (strcmp(name, PHRASE_FREQUENCY_ADJUSTABLE) == 0)

@@ -30,6 +30,7 @@ class Parameter {
   void setConnection(IBusConnection *conn);
 
   guint pagesize_;  ///< 词语查询表的页面大小
+  gboolean space_fullpunct_;  ///< 空格全角
   gboolean cursor_visible_;  ///< 光标可见
   gboolean phrase_frequency_adjustable_;  ///< 调整词频
   gboolean engine_phrase_savable_;  ///< 保存引擎合成词语
@@ -40,6 +41,7 @@ class Parameter {
   ~Parameter();
 
   void updatePagesize(GValue *value);
+  void updateSpaceFullpunct(GValue *value);
   void updateCursorVisible(GValue *value);
   void updatePhraseFrequencyAdjustable(GValue *value);
   void updateEnginePhraseSavable(GValue *value);

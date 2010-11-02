@@ -42,7 +42,7 @@ private:
   void hideUI();
   void resetEngine();
 
-  void appendComposePhrase();
+  void appendEnginePhrase();
   void appendDynamicPhrase();
   void appendPageCandidate();
 

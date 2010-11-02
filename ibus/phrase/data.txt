@@ -1,0 +1,2 @@
+#format: pinyin = phrase data or build-in function
+#e.g.: rq = $year/$month/$day
