@@ -74,9 +74,9 @@ ParameterSettings::~ParameterSettings() {
 /**
  * 程序数据设置入口.
  */
-void ParameterSettings::entry(IBusConnection *conn) {
+void ParameterSettings::entry(GDBusConnection *conn) {
   /* 创建IBUS配置引擎 */
-  config_ = ibus_config_new(conn);
+  config_ = ibus_config_new(conn, NULL, NULL);
 
   /* 创建相关窗体 */
   GtkWidget *dialog = createMainWindow();
@@ -290,68 +290,68 @@ GtkWidget *ParameterSettings::createMend() {
  */
 void ParameterSettings::setRoutineValue() {
   /* 设置备份用户数据的时间间隔 */
-  GValue value = {0};
-  guint backup_cycle = 60;
-  if (ibus_config_get_value(config_, SECTION, BACKUP_CYCLE, &value)) {
-    if ((backup_cycle = g_value_get_int(&value)) < 30)
+  GVariant *value = NULL;
+  guint32 backup_cycle = 60;
+  if ( (value = ibus_config_get_value(config_, SECTION, BACKUP_CYCLE))) {
+    if ((backup_cycle = g_variant_get_uint32(value)) < 30)
       backup_cycle = 30;
-    g_value_unset(&value);
+    g_variant_unref(value);
   }
   GtkWidget *widget =
       GTK_WIDGET(g_datalist_get_data(&widget_set_, "backup-spinbutton-widget"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), backup_cycle);
 
   /* 设置词语查询表的页面大小 */
-  guint pagesize = 5;
-  if (ibus_config_get_value(config_, SECTION, PAGESIZE, &value)) {
-    if ((pagesize = g_value_get_int(&value)) < 3)
+  guchar pagesize = 5;
+  if ( (value = ibus_config_get_value(config_, SECTION, PAGESIZE))) {
+    if ((pagesize = g_variant_get_byte(value)) < 3)
       pagesize = 3;
-    g_value_unset(&value);
+    g_variant_unref(value);
   }
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "pagesize-spinbutton-widget"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), pagesize);
 
   /* 设置空格全角 */
   gboolean space_fullpunct = TRUE;
-  if (ibus_config_get_value(config_, SECTION, SPACE_FULLPUNCT, &value)) {
-    space_fullpunct = g_value_get_boolean(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, SPACE_FULLPUNCT))) {
+    space_fullpunct = g_variant_get_boolean(value);
+    g_variant_unref(value);
   }
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "space-checkbutton-widget"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), space_fullpunct);
 
   /* 设置光标是否可见 */
   gboolean cursor_visible = TRUE;
-  if (ibus_config_get_value(config_, SECTION, CURSOR_VISIBLE, &value)) {
-    cursor_visible = g_value_get_boolean(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, CURSOR_VISIBLE))) {
+    cursor_visible = g_variant_get_boolean(value);
+    g_variant_unref(value);
   }
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "cursor-checkbutton-widget"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), cursor_visible);
 
   /* 设置词频是否调整 */
   gboolean phrase_frequency_adjustable = TRUE;
-  if (ibus_config_get_value(config_, SECTION, PHRASE_FREQUENCY_ADJUSTABLE, &value)) {
-    phrase_frequency_adjustable = g_value_get_boolean(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, PHRASE_FREQUENCY_ADJUSTABLE))) {
+    phrase_frequency_adjustable = g_variant_get_boolean(value);
+    g_variant_unref(value);
   }
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "frequency-checkbutton-widget"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), phrase_frequency_adjustable);
 
   /* 是否保存引擎合成词语 */
   gboolean engine_phrase_savable = TRUE;
-  if (ibus_config_get_value(config_, SECTION, ENGINE_PHRASE_SAVABLE, &value)) {
-    engine_phrase_savable = g_value_get_boolean(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, ENGINE_PHRASE_SAVABLE))) {
+    engine_phrase_savable = g_variant_get_boolean(value);
+    g_variant_unref(value);
   }
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "engine-checkbutton-widget"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), engine_phrase_savable);
 
   /* 是否保存用户合成词语 */
   gboolean manual_phrase_savable = TRUE;
-  if (ibus_config_get_value(config_, SECTION, MANUAL_PHRASE_SAVABLE, &value)) {
-    manual_phrase_savable = g_value_get_boolean(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, MANUAL_PHRASE_SAVABLE))) {
+    manual_phrase_savable = g_variant_get_boolean(value);
+    g_variant_unref(value);
   }
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "manual-checkbutton-widget"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), manual_phrase_savable);
@@ -362,11 +362,11 @@ void ParameterSettings::setRoutineValue() {
  */
 void ParameterSettings::setFuzzyValue() {
   /* 获取模糊拼音串 */
-  GValue value = {0};
+  GVariant *value = NULL;
   gchar *fuzzy_pair = NULL;
-  if (ibus_config_get_value(config_, SECTION, FUZZY_PINYIN_PAIR, &value)) {
-    fuzzy_pair = g_value_dup_string(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, FUZZY_PINYIN_PAIR))) {
+    fuzzy_pair = g_variant_dup_string(value, NULL);
+    g_variant_unref(value);
   }
 
   /* 清除所有模糊拼音的选中标记 */
@@ -397,11 +397,11 @@ void ParameterSettings::setFuzzyValue() {
  */
 void ParameterSettings::setMendValue() {
   /* 获取修正拼音串 */
-  GValue value = {0};
+  GVariant *value = NULL;
   gchar *mend_pair = NULL;
-  if (ibus_config_get_value(config_, SECTION, MEND_PINYIN_PAIR, &value)) {
-    mend_pair = g_value_dup_string(&value);
-    g_value_unset(&value);
+  if ( (value = ibus_config_get_value(config_, SECTION, MEND_PINYIN_PAIR))) {
+    mend_pair = g_variant_dup_string(value, NULL);
+    g_variant_unref(value);
   }
 
   /* 清除所有修正拼音的选中标记 */
@@ -432,61 +432,46 @@ void ParameterSettings::setMendValue() {
  */
 void ParameterSettings::extractRoutineValue() {
   /* 更新备份用户词语的时间间隔 */
-  GValue value = {0};
   GtkWidget *widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "backup-spinbutton-widget"));
-  guint backup_cycle = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, backup_cycle);
-  ibus_config_set_value(config_, SECTION, BACKUP_CYCLE, &value);
-  g_value_unset(&value);
+  guint32 backup_cycle = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  GVariant *value = g_variant_new_uint32(backup_cycle);
+  ibus_config_set_value(config_, SECTION, BACKUP_CYCLE, value);
 
   /* 更新词语查询表的页面大小 */
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "pagesize-spinbutton-widget"));
-  guint pagesize = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, pagesize);
-  ibus_config_set_value(config_, SECTION, PAGESIZE, &value);
-  g_value_unset(&value);
+  guchar pagesize = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  value = g_variant_new_byte(pagesize);
+  ibus_config_set_value(config_, SECTION, PAGESIZE, value);
 
   /* 更新空格全角标记 */
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "space-checkbutton-widget"));
   gboolean space_fullpunct = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  g_value_init(&value, G_TYPE_BOOLEAN);
-  g_value_set_boolean(&value, space_fullpunct);
-  ibus_config_set_value(config_, SECTION, SPACE_FULLPUNCT, &value);
-  g_value_unset(&value);
+  value = g_variant_new_boolean(space_fullpunct);
+  ibus_config_set_value(config_, SECTION, SPACE_FULLPUNCT, value);
 
   /* 更新光标可见标记 */
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "cursor-checkbutton-widget"));
   gboolean cursor_visible = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  g_value_init(&value, G_TYPE_BOOLEAN);
-  g_value_set_boolean(&value, cursor_visible);
-  ibus_config_set_value(config_, SECTION, CURSOR_VISIBLE, &value);
-  g_value_unset(&value);
+  value = g_variant_new_boolean(cursor_visible);
+  ibus_config_set_value(config_, SECTION, CURSOR_VISIBLE, value);
 
   /* 更新词频调整标记 */
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "frequency-checkbutton-widget"));
   gboolean phrase_frequency_adjustable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  g_value_init(&value, G_TYPE_BOOLEAN);
-  g_value_set_boolean(&value, phrase_frequency_adjustable);
-  ibus_config_set_value(config_, SECTION, PHRASE_FREQUENCY_ADJUSTABLE, &value);
-  g_value_unset(&value);
+  value = g_variant_new_boolean(phrase_frequency_adjustable);
+  ibus_config_set_value(config_, SECTION, PHRASE_FREQUENCY_ADJUSTABLE, value);
 
   /* 更新保存引擎合成词语标记 */
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "engine-checkbutton-widget"));
   gboolean engine_phrase_savable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  g_value_init(&value, G_TYPE_BOOLEAN);
-  g_value_set_boolean(&value, engine_phrase_savable);
-  ibus_config_set_value(config_, SECTION, ENGINE_PHRASE_SAVABLE, &value);
-  g_value_unset(&value);
+  value = g_variant_new_boolean(engine_phrase_savable);
+  ibus_config_set_value(config_, SECTION, ENGINE_PHRASE_SAVABLE, value);
 
   /* 更新保存用户合成词语标记 */
   widget = GTK_WIDGET(g_datalist_get_data(&widget_set_, "manual-checkbutton-widget"));
   gboolean manual_phrase_savable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  g_value_init(&value, G_TYPE_BOOLEAN);
-  g_value_set_boolean(&value, manual_phrase_savable);
-  ibus_config_set_value(config_, SECTION, MANUAL_PHRASE_SAVABLE, &value);
-  g_value_unset(&value);
+  value = g_variant_new_boolean(manual_phrase_savable);
+  ibus_config_set_value(config_, SECTION, MANUAL_PHRASE_SAVABLE, value);
 }
 
 /**
@@ -515,11 +500,8 @@ void ParameterSettings::extractFuzzyValue() {
   *ptr = '\0';
 
   /* 更新数据 */
-  GValue value = {0};
-  g_value_init(&value, G_TYPE_STRING);
-  g_value_set_string(&value, fuzzy_pair);
-  ibus_config_set_value(config_, SECTION, FUZZY_PINYIN_PAIR, &value);
-  g_value_unset(&value);
+  GVariant *value = g_variant_new_string(fuzzy_pair);
+  ibus_config_set_value(config_, SECTION, FUZZY_PINYIN_PAIR, value);
 
   /* 释放资源 */
   g_slist_free(pair_list);
@@ -552,11 +534,8 @@ void ParameterSettings::extractMendValue() {
   *ptr = '\0';
 
   /* 更新数据 */
-  GValue value = {0};
-  g_value_init(&value, G_TYPE_STRING);
-  g_value_set_string(&value, mend_pair);
-  ibus_config_set_value(config_, SECTION, MEND_PINYIN_PAIR, &value);
-  g_value_unset(&value);
+  GVariant *value = g_variant_new_string(mend_pair);
+  ibus_config_set_value(config_, SECTION, MEND_PINYIN_PAIR, value);
 
   /* 释放资源 */
   g_slist_free(pair_list);
@@ -567,9 +546,6 @@ void ParameterSettings::extractMendValue() {
  * 更新配置数据.
  */
 void ParameterSettings::updateConfig() {
-  GValue value = {0};
-  g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, time(NULL));
-  ibus_config_set_value(config_, SECTION, END, &value);
-  g_value_unset(&value);
+  GVariant *value = g_variant_new_int64(time(NULL));
+  ibus_config_set_value(config_, SECTION, END, value);
 }

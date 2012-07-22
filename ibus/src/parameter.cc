@@ -77,11 +77,11 @@ void Parameter::removeListener(PyeEngine *engine) {
  * 设置IBus总线连接，并更新相关配置数据.
  * @param conn 总线连接
  */
-void Parameter::setConnection(IBusConnection *conn) {
+void Parameter::setConnection(GDBusConnection *conn) {
   /* 新建IBus配置接口 */
   if (config_)
     g_object_unref(config_);
-  config_ = ibus_config_new(conn);
+  config_ = ibus_config_new(conn, NULL, NULL);
   g_signal_connect_swapped(config_, "value-changed",
                            G_CALLBACK(configChanged), this);
 
@@ -105,14 +105,14 @@ void Parameter::setConnection(IBusConnection *conn) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updatePagesize(GValue *value) {
+void Parameter::updatePagesize(GVariant *value) {
   if (value) {
-    pagesize_ = g_value_get_int(value);
+    pagesize_ = g_variant_get_byte(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, PAGESIZE, &local_value)) {
-      pagesize_ = g_value_get_int(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, PAGESIZE))) {
+      pagesize_ = g_variant_get_byte(local_value);
+      g_variant_unref(local_value);
     }
   }
 
@@ -125,14 +125,14 @@ void Parameter::updatePagesize(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateSpaceFullpunct(GValue *value) {
+void Parameter::updateSpaceFullpunct(GVariant *value) {
   if (value) {
-    space_fullpunct_ = g_value_get_boolean(value);
+    space_fullpunct_ = g_variant_get_boolean(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, SPACE_FULLPUNCT, &local_value)) {
-      space_fullpunct_ = g_value_get_boolean(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, SPACE_FULLPUNCT))) {
+      space_fullpunct_ = g_variant_get_boolean(local_value);
+      g_variant_unref(local_value);
     }
   }
 }
@@ -142,14 +142,14 @@ void Parameter::updateSpaceFullpunct(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateCursorVisible(GValue *value) {
+void Parameter::updateCursorVisible(GVariant *value) {
   if (value) {
-    cursor_visible_ = g_value_get_boolean(value);
+    cursor_visible_ = g_variant_get_boolean(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, CURSOR_VISIBLE, &local_value)) {
-      cursor_visible_ = g_value_get_boolean(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, CURSOR_VISIBLE))) {
+      cursor_visible_ = g_variant_get_boolean(local_value);
+      g_variant_unref(local_value);
     }
   }
 }
@@ -159,15 +159,14 @@ void Parameter::updateCursorVisible(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updatePhraseFrequencyAdjustable(GValue *value) {
+void Parameter::updatePhraseFrequencyAdjustable(GVariant *value) {
   if (value) {
-    phrase_frequency_adjustable_ = g_value_get_boolean(value);
+    phrase_frequency_adjustable_ = g_variant_get_boolean(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, PHRASE_FREQUENCY_ADJUSTABLE,
-                              &local_value)) {
-      phrase_frequency_adjustable_ = g_value_get_boolean(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, PHRASE_FREQUENCY_ADJUSTABLE))) {
+      phrase_frequency_adjustable_ = g_variant_get_boolean(local_value);
+      g_variant_unref(local_value);
     }
   }
 }
@@ -177,15 +176,14 @@ void Parameter::updatePhraseFrequencyAdjustable(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateEnginePhraseSavable(GValue *value) {
+void Parameter::updateEnginePhraseSavable(GVariant *value) {
   if (value) {
-    engine_phrase_savable_ = g_value_get_boolean(value);
+    engine_phrase_savable_ = g_variant_get_boolean(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, ENGINE_PHRASE_SAVABLE,
-                              &local_value)) {
-      engine_phrase_savable_ = g_value_get_boolean(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, ENGINE_PHRASE_SAVABLE))) {
+      engine_phrase_savable_ = g_variant_get_boolean(local_value);
+      g_variant_unref(local_value);
     }
   }
 }
@@ -195,15 +193,14 @@ void Parameter::updateEnginePhraseSavable(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateManualPhraseSavable(GValue *value) {
+void Parameter::updateManualPhraseSavable(GVariant *value) {
   if (value) {
-    manual_phrase_savable_ = g_value_get_boolean(value);
+    manual_phrase_savable_ = g_variant_get_boolean(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, MANUAL_PHRASE_SAVABLE,
-                              &local_value)) {
-      manual_phrase_savable_ = g_value_get_boolean(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, MANUAL_PHRASE_SAVABLE))) {
+      manual_phrase_savable_ = g_variant_get_boolean(local_value);
+      g_variant_unref(local_value);
     }
   }
 }
@@ -213,18 +210,17 @@ void Parameter::updateManualPhraseSavable(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateMendPinyinPair(GValue *value) {
+void Parameter::updateMendPinyinPair(GVariant *value) {
   g_free(mend_data_);
   mend_data_ = NULL;
 
   if (value) {
-    mend_data_ = g_value_dup_string(value);
+    mend_data_ = g_variant_dup_string(value, NULL);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, MEND_PINYIN_PAIR,
-                              &local_value)) {
-      mend_data_ = g_value_dup_string(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, MEND_PINYIN_PAIR))) {
+      mend_data_ = g_variant_dup_string(local_value, NULL);
+      g_variant_unref(local_value);
     }
   }
 
@@ -236,18 +232,17 @@ void Parameter::updateMendPinyinPair(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateFuzzyPinyinPair(GValue *value) {
+void Parameter::updateFuzzyPinyinPair(GVariant *value) {
   g_free(fuzzy_data_);
   fuzzy_data_ = NULL;
 
   if (value) {
-    fuzzy_data_ = g_value_dup_string(value);
+    fuzzy_data_ = g_variant_dup_string(value, NULL);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, FUZZY_PINYIN_PAIR,
-                              &local_value)) {
-      fuzzy_data_ = g_value_dup_string(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, FUZZY_PINYIN_PAIR))) {
+      fuzzy_data_ = g_variant_dup_string(local_value, NULL);
+      g_variant_unref(local_value);
     }
   }
 
@@ -259,14 +254,14 @@ void Parameter::updateFuzzyPinyinPair(GValue *value) {
  * @param value 数值
  * @note 如果(value==NULL)则表明数值需要临时获取.
  */
-void Parameter::updateBackupCycle(GValue *value) {
+void Parameter::updateBackupCycle(GVariant *value) {
   if (value) {
-    backup_cycle_ = g_value_get_int(value);
+    backup_cycle_ = g_variant_get_uint32(value);
   } else {
-    GValue local_value = {0};
-    if (ibus_config_get_value(config_, SECTION, BACKUP_CYCLE, &local_value)) {
-      backup_cycle_ = g_value_get_int(&local_value);
-      g_value_unset(&local_value);
+    GVariant *local_value = NULL;
+    if ( (local_value = ibus_config_get_value(config_, SECTION, BACKUP_CYCLE))) {
+      backup_cycle_ = g_variant_get_uint32(local_value);
+      g_variant_unref(local_value);
     }
   }
 
@@ -352,7 +347,7 @@ void Parameter::updateFuzzyPinyinPair() {
  * @param value GValue that holds the value.
  */
 void Parameter::configChanged(Parameter *object, gchar *section,
-                              gchar *name, GValue *value) {
+                              gchar *name, GVariant *value) {
   if (strcmp(section, SECTION) == 0) {
     if (strcmp(name, PAGESIZE) == 0)
       object->updatePagesize(value);

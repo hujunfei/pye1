@@ -37,7 +37,7 @@ int main(gint argc, gchar *argv[]) {
 
   /* 创建数据配置对话框，并运行 */
   gtk_window_set_default_icon_from_file(__PIXMAPS_PATH "/pye.png", NULL);
-  IBusConnection *conn = ibus_bus_get_connection(bus);
+  GDBusConnection *conn = ibus_bus_get_connection(bus);
   ParameterSettings parameter_settings;
   parameter_settings.entry(conn);
 

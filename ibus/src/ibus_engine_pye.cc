@@ -55,13 +55,10 @@ static void start_component() {
   ibus_init();
 
   IBusBus *bus = ibus_bus_new();
-  if (!ibus_bus_is_connected(bus)) {
-    g_warning("Can not connect to ibus");
-    exit(0);
-  }
   g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnected_cb), NULL);
 
   IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));
+  g_object_ref_sink(factory);
   if (ibus) {
     ibus_factory_add_engine(factory, "pinyin", IBUS_TYPE_PYE_ENGINE);
     ibus_bus_request_name(bus, "org.freedesktop.IBus.Pye", 0);
@@ -73,8 +70,8 @@ static void start_component() {
                                                   "GPL 2+",
                                                   "Jally <jallyx@163.com>",
                                                   "http://code.google.com/p/pye1/",
-                                                  NULL,
-                                                  NULL);
+                                                  "",
+                                                  "ibus-pye");
     IBusEngineDesc *desc = ibus_engine_desc_new("pinyin (debug)",
                                                 "Pye Pinyin Engine (debug)",
                                                 "pye input method (debug)",
@@ -138,6 +135,6 @@ int main(gint argc, gchar **argv) {
   }
 
   init_phrase_engine();
-  start_component ();
+  start_component();
   return 0;
 }

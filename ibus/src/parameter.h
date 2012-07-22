@@ -27,9 +27,9 @@ class Parameter {
   void addListener(PyeEngine *engine);
   void removeListener(PyeEngine *engine);
 
-  void setConnection(IBusConnection *conn);
+  void setConnection(GDBusConnection *conn);
 
-  guint pagesize_;  ///< 词语查询表的页面大小
+  guchar pagesize_;  ///< 词语查询表的页面大小
   gboolean space_fullpunct_;  ///< 空格全角
   gboolean cursor_visible_;  ///< 光标可见
   gboolean phrase_frequency_adjustable_;  ///< 调整词频
@@ -40,23 +40,23 @@ class Parameter {
   Parameter();
   ~Parameter();
 
-  void updatePagesize(GValue *value);
-  void updateSpaceFullpunct(GValue *value);
-  void updateCursorVisible(GValue *value);
-  void updatePhraseFrequencyAdjustable(GValue *value);
-  void updateEnginePhraseSavable(GValue *value);
-  void updateManualPhraseSavable(GValue *value);
+  void updatePagesize(GVariant *value);
+  void updateSpaceFullpunct(GVariant *value);
+  void updateCursorVisible(GVariant *value);
+  void updatePhraseFrequencyAdjustable(GVariant *value);
+  void updateEnginePhraseSavable(GVariant *value);
+  void updateManualPhraseSavable(GVariant *value);
 
-  void updateMendPinyinPair(GValue *value);
-  void updateFuzzyPinyinPair(GValue *value);
-  void updateBackupCycle(GValue *value);
+  void updateMendPinyinPair(GVariant *value);
+  void updateFuzzyPinyinPair(GVariant *value);
+  void updateBackupCycle(GVariant *value);
 
   void notifyListener();
   void updateMendPinyinPair();
   void updateFuzzyPinyinPair();
 
   static void configChanged(Parameter *object, gchar *section,
-                            gchar *name, GValue *value);
+                            gchar *name, GVariant *value);
   static gboolean backupData();
 
   IBusConfig *config_;  ///< IBUS配置接口
@@ -65,7 +65,7 @@ class Parameter {
 
   gchar *mend_data_;  ///< 拼音矫正串
   gchar *fuzzy_data_;  ///< 模糊拼音串
-  guint backup_cycle_;  ///< 备份用户词语
+  guint32 backup_cycle_;  ///< 备份用户词语
 };
 
 #endif  // IBUS_PYE_PARAMETER_H_

@@ -20,7 +20,7 @@ class ParameterSettings {
   ParameterSettings();
   ~ParameterSettings();
 
-  void entry(IBusConnection *conn);
+  void entry(GDBusConnection *conn);
 
  private:
   GtkWidget *createMainWindow();

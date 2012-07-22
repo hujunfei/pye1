@@ -4,13 +4,12 @@ ibus_engine_pye_SOURCES = engine.cc half_full_converter.cc ibus_engine_pye.cc \
                           parameter.cc pye_engine.cc
 ibus_setup_pye_SOURCES = ibus_setup_pye.cc parameter_settings.cc
 
+AM_CPPFLAGS = -I$(top_srcdir)
 AM_CXXFLAGS = -Wall
 
-# set the include path found by configure
 ibus_engine_pye_CPPFLAGS = $(IBUS_CFLAGS) $(PYE_CFLAGS)
 ibus_setup_pye_CPPFLAGS = $(IBUS_CFLAGS) $(GTK_CFLAGS)
 
-# the library search path.
 ibus_engine_pye_LDFLAGS = $(IBUS_LIBS) $(PYE_LIBS)
 ibus_setup_pye_LDFLAGS = $(IBUS_LIBS) $(GTK_LIBS)
 
